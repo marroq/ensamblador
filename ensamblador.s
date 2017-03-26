@@ -60,7 +60,6 @@ str_syscall:	.asciiz "syscall"
 ###################################################
 ############ funcion ensamblador ##################
 ###################################################
-
 ensamblador:
 # Entrada, almaceno variables a utilizar
    addi $sp $sp -40
@@ -121,7 +120,7 @@ asm_exit:
    jr $ra
 
 ###########################################
-###### Funciones #############################
+###### Funciones ##########################
 ###########################################
 
 asm_get_instruction:		# Basicamente, un gran switch que indica que instruccion es
@@ -175,170 +174,76 @@ asm_syscall:			# esta instruccion es la mas facil de codificar
 ######### asm_ori #########################
 ###########################################
 asm_ori:
-   li $s7 0x0d			# codigo de ori 0x0d
+   li $s7 0x0d		# codigo de ori 0x0d
 
-   sll $s7 $s7 10		# shift porque son 5b de rt + 5b de rs
-   addi $s0 $s0 1		# elimino el espacio
-   jal asm_regs     		# me devuelve el numero del registro
-   add $s7 $s7 $v0		# almaceno el numero del registro en rs
+   sll $s7 $s7 10	# shift porque son 5b de rt + 5b de rs
+   addi $s0 $s0 1	# elimino el espacio
+   jal asm_regs     	# me devuelve el numero del registro
+   add $s7 $s7 $v0	# almaceno el numero del registro en rs
 
-   addi $s0 $s0 1		# elimino el espacio
-   jal asm_regs     		# me devuelve el numero del registro
-   sll $v0 $v0 5		# pongo rs en la posicion que debe ir (van cruzados)
-   or  $s7 $s7 $v0		# almaceno el numero del registro en rt
+   addi $s0 $s0 1	# elimino el espacio
+   jal asm_regs     	# me devuelve el numero del registro
+   sll $v0 $v0 5	# pongo rs en la posicion que debe ir (van cruzados)
+   or  $s7 $s7 $v0	# almaceno el numero del registro en rt
  
-   sll $s7 $s7 16		# le hago shift de 16 para hacer espacio al imm
-   addi $s0 $s0 1		# elimino el espacio
-   jal ascii_to_int		# hago la conversion de ascii a int
-   addu $s7 $s7 $v0 		# concateno el imm con el resto que ya tenia
-   sw $s7 0($s1)		# almaceno la instruccion codificada
+   sll $s7 $s7 16	# le hago shift de 16 para hacer espacio al imm
+   addi $s0 $s0 1	# elimino el espacio
+   jal ascii_to_int	# hago la conversion de ascii a int
+   addu $s7 $s7 $v0 	# concateno el imm con el resto que ya tenia
+   sw $s7 0($s1)	# almaceno la instruccion codificada
    addi $s1 $s1 4
    j asm_text_loop
 
 ###########################################
 ############# asm_regs ####################
 ###########################################
-asm_regs:		# pasa de $xN -> N ej. $s0 -> 16
-   addi $sp $sp -4	
+asm_regs:			# Pasa de $xN -> N, por ejemplo $s0 -> 16
+   addi $sp $sp -4
    sw $ra 0($sp)
-   li $t7 '$'		# voy a utilizarlo para verificar que viene un registro
-   li $t6 'a'		# aX -> argumentos
-   li $t5 'v'		# vX -> valores de retorno
-   li $t4 '0'		# cero
-   li $t3 's'		# sX -> valores de variables
-   li $t2 't'		# tX -> valores temporales
-   li $t1 'k'		# kX
-   li $s1 'g'		# gp
-   li $t8 'f'		# fp
-   li $t9 'r'		# ra
-
-   lb 	$t0 0($s0)
+   li $t7 '$'			# Se usara para verificar que viene un registro
+   li $t6 'a'			# aX -> argumentos
+   li $t5 'v'			# vX -> valores de retorno
+   li $t4 '0'			# cero
+   				# Completar para los demas registros
+   
+   lb $t0 0($s0)
    addi $s0 $s0 1
-   bne 	$t0 $t7 asm_regs_error	# si no empieza con $ no es valido
-   lb 	$t0 0($s0)
+   bne $t0 $t7 asm_regs_error	# Si no empieza con $ no es valido
+   lb $t0 0($s0)
    addi $s0 $s0 1
-   beq 	$t0 $t4 asm_regs_zero
-   beq 	$t0 $t6 asm_regs_at	#validare primero si no es $at el que viene
-continue:
-   beq 	$t0 $t5 asm_regs_vx	# verifico a que grupo pertence para sumarle un offset
-   beq 	$t0 $t6 asm_regs_ax	
-   beq	$t0 $t2 asm_regs_tx
-   beq 	$t0 $t3 asm_regs_sp 	# validare primero si no es $sp el que viene
-continue2:
-   beq 	$t0 $t3 asm_regs_sx
-   beq 	$t0 $t1 asm_regs_kx
-   beq  $t0 $s1 asm_regs_gp
-   beq 	$t0 $t8 asm_regs_fp
-   beq 	$t0 $t9 asm_regs_ra	
-   j asm_regs_error		# no es ninguno, entonces es error
+   beq $t0 $t6 asm_regs_ax	# Verificar a que grupo pertence para sumarle un offset
+   beq $t0 $t5 asm_regs_vx
+   beq $t0 $t4 asm_regs_zero
+   j asm_regs_error		# No es ninguno, es un error
 
-asm_regs_zero:			# caso trivial, $0 -> 0
-   li 	$v0 0
-   j 	asm_regs_exit
+asm_regs_zero:			# Caso trivial 
+   li $v0 0
+   j asm_regs_exit
 
-asm_regs_ax:			# sumamos 4 porque... $a0 -> 4, $a1 -> 5, etc.
-   jal 	ascii_to_int
-   addi $v0 $v0 4
-   j 	asm_regs_exit
+asm_regs_ax:
+   jal ascii_to_int
+   addi $v0 $v0 4		# $a0 es 4, $a1 es 5, etc.
+   j asm_regs_exit
 
 asm_regs_vx:
-   jal 	ascii_to_int
+   jal ascii_to_int
    addi $v0 $v0 2
-   j 	asm_regs_exit
-   
-asm_regs_sx:
-   jal 	ascii_to_int
-   addi $v0 $v0 16
-   j 	asm_regs_exit
-   
-asm_regs_tx:
-   jal 	ascii_to_int
-   addi $v0 $v0 8
-   beq	$v0 16 t8_9	# si el registro es $t8
-   beq	$v0 17 t8_9	# si el registro es $t9
-   j 	asm_regs_exit
-t8_9:
-   addi	$v0 $v0 8	# le sumo 8 porque tengo que saltarme  todos los $s
-   j	asm_regs_exit
-
-asm_regs_kx:
-   jal 	ascii_to_int
-   addi $v0 $v0 26
-   j 	asm_regs_exit   
-
-asm_regs_at:
-   lb 	$s1 0($s0)
-   li 	$s2 't'
-   beq	$s1 $s2 es_at
-   j continue
-es_at:
-   li	$v0 1
-   j	asm_regs_exit
-
-asm_regs_gp:
-   li 	$v0 28
-   j 	asm_regs_exit
-	   
-asm_regs_sp:
-   lb 	$s1 0($s0)
-   li 	$s2 'p'
-   beq	$s1 $s2 es_sp
-   j continue2
-es_sp:
-   li	$v0 29
-   j	asm_regs_exit
-   
-asm_regs_fp:
-   li 	$v0 30
-   j	asm_regs_exit
-   
-asm_regs_ra:
-   li	$v0 31
-   j 	asm_regs_exit
+   j asm_regs_exit
 
 asm_regs_exit:
-   lw 	$ra 0($sp)
+   lw $ra 0($sp)
    addi $sp $sp 4
-   jr 	$ra
+   jr $ra
 
 asm_regs_error:
-   # despliegue un mensaje de error
-   # termine la ejecucion del programa
-   la 	$a0 error
-   li 	$v0 4
-   syscall
-   li 	$v0 10
-   syscall
-##### FIN DE CONVERTIDOR DE REGISTROS #####
-
-##### ATOI: ASCII TO INTEGER #####
-ascii_to_int:   # the infamous atoi, with no validations!
-li $t1 0	# init with zero
-li $t2 '0'	
-li $t3 '9'	
-li $t4 10
-li $v0 0
-
-ascii_to_int_loop:
-   lb 	$t0 0($s0)
-   beq 	$t0 $0  ascii_to_int_exit
-   blt 	$t0 $t2 ascii_to_int_exit	# only accept numbers
-   bgt 	$t0 $t3 ascii_to_int_exit	# only accept numbers
-   addi $s0 $s0 1			# advance the char pointer
-   addi $t0 $t0 -48			# get real number (without the '0' offset)
-   mul  $v0 $v0 $t4			# multiply by 10
-   add  $v0 $v0 $t0			# add real number
-   j ascii_to_int_loop
-   
-ascii_to_int_exit:
-   jr 	$ra
-##### FIN DE ATOI #####
+   addi $sp $sp 4
+   j asm_error
 
 ###########################################
 ######### ascii_to_int ####################
 ###########################################
-ascii_to_int:   # the infamous atoi, with no validations!
-li $t1 0		# init with zero
+ascii_to_int:   				# the infamous atoi, with no validations!
+li $t1 0				# init with zero
 li $t2 '0'	
 li $t3 '9'	
 li $t4 10
@@ -389,7 +294,7 @@ strcmp_false:
 ###########################################
 ######### asm_label_check #################
 ###########################################
-asm_label_check:	# Verifica si la cadena es un label
+asm_label_check:			# Verifica si la cadena es un label
    li $t1 ':'
    li $t2 ' '
    li $t3 10
