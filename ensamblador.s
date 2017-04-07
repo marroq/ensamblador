@@ -1,5 +1,6 @@
 .data
 msgBCodif: 	.asciiz "Codificando el siguinete programa:\n\n"
+		.align 2
 
 ##### INICIO DEL PROGRAMA A CODIFICAR #####
 ### El programa tiene que quedar en una sola linea, separar las lineas con \n
@@ -11,9 +12,14 @@ msgFCodif: 	.asciiz "\n\nFinaliza la codificacion...\n\nEjecutando el programa c
 	
 		.align 2
 data:		.space 200	# Reservo 200 bytes para datos
+		.align 2
 ### MARS solo nos dejara pedir espacio en el area de data
 ### Debemos ir en MARS a Settings y activar Self-modifying code
 text:		.space 400	# Reservo espacio para almacenar el programa compilado (100 instrucciones)
+		.align 2
+
+tabla:		.space 480	#20 labels como máximo de 20 caracteres máximo cada etiqueta
+		.align 2
 
 .text
 main:
@@ -123,6 +129,71 @@ asm_exit:
 ###### Funciones ##########################
 ###########################################
 
+###########################################
+###### Guardar en tabla de simbolos ##############
+guardarTabla:		
+   li 	$t0 0			# contador de labels
+   li	$t1 ':'			# los " : " no deben escribirse
+   li	$t2 24			# cada label ocupa 24 bytes
+   mult $t0 $t2
+nextPosition:
+   mflo	$t4 			# guardo el resultado de que label llevo, es decir, voy de 24 en 24
+   lb 	$t3 tabla($t4)		# cargo el byte de la primera/siguiente posicion de la tabla de símbolos
+   addi $t0 $t0 1
+   mult	$t0 $t2
+   bgt  $t3 $0 nextPosition
+   move	$t0 $t4
+nextChar:
+   lb 	$t3 0($a0)		# cargo letra por letra de lo que venga en $a0
+   beq 	$t3 $t1 saveAddress	# si encuentro " : " es porque ya terminé
+   beq	$t3 $0 saveAddress	# si es un 0 = salto de línea \0, es porque ya terminé
+   sb	$t3 tabla($t0)		# escribo letra por letra en mi espacio reservado llamado -tabla-
+   addi	$a0 $a0 1		# avanzo al siguiente caracter del label
+   addi $t0 $t0 1		# incremente el contrador de labels
+   j nextChar
+saveAddress:
+   li 	$t6 '\0'		
+   addi $t0 $t0 1		
+   sb   $t6 tabla($t0)		# escribo el terminador de línea
+   add	$t5 $t4 20		# para escribir la dirección del label
+   sw 	$a1 tabla($t5)
+   jr	$ra
+
+###########################################
+###### Obtener de la tabla de simbolos ############
+obtener:	
+   addi $sp $sp -8
+   sw	$ra 0($sp)
+   sw	$s0 4($sp)
+   li 	$s0 0			# contador de labels	
+   li	$t2 24			# cada label ocupa 24 bytes
+   mult $s0 $t2
+nextLabel:
+   mflo $t4
+   la 	$a1 tabla($t4)		# cargo la dirección del label   
+   lb	$t9 0($a1)		# veo que tiene el primer caracter de la dirección cargada, esto para ver si no está vacío, entonces ya no hay más datos en la tabla
+   beq 	$t9 $0 notExist
+   addi $s0 $s0 1
+   mult	$s0 $t2
+   jal	strcmp			
+   beq	$v0 1 exitObtener
+   beq 	$v0 0 nextLabel
+exitObtener:
+   addi $t1 $s0 20		# me voy al área donde está la dirección del label
+   la 	$v0 tabla($t1) 		# cargo la dirección del label solicitado
+   lw 	$s0 4($sp)
+   lw	$ra 0($sp)		
+   addi $sp $sp 8
+   jr	$ra
+notExist:
+   lw 	$s0 4($sp)
+   lw	$ra 0($sp)		
+   addi $sp $sp 8
+   li	$v0 -1
+   jr	$ra
+   
+###########################################
+###### Seleccion de instrucciones #################
 asm_get_instruction:		# Basicamente, un gran switch que indica que instruccion es
    addi $s0 $s0 -1		# Ya se habia sumado un 1 antes de llegar aqui, arreglamos eso
 
