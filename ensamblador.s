@@ -23,7 +23,7 @@ main:
    jal print_str
    la $a0 msgFCodif
    jal print_str
-
+	
    la $a0 programa	# Llamo a la funcion con sus respectivos argumentos
    la $a1 text
    la $a2 data
@@ -197,38 +197,103 @@ asm_ori:
 ###########################################
 ############# asm_regs ####################
 ###########################################
-asm_regs:			# Pasa de $xN -> N, por ejemplo $s0 -> 16
-   addi $sp $sp -4
+asm_regs:		# pasa de $xN -> N ej. $s0 -> 16
+   addi $sp $sp -4	
    sw $ra 0($sp)
-   li $t7 '$'			# Se usara para verificar que viene un registro
-   li $t6 'a'			# aX -> argumentos
+   li $t7 '$'		# voy a utilizarlo para verificar que viene un registro
+   li $t6 'a'		# aX -> argumentos
+   li $t4 '0'		# cero
+   li $t3 's'		# sX -> valores de variables
+   li $t2 't'		# tX -> valores temporales
+   li $t1 'k'		# kX
+   li $t8 'f'		# fp
+   li $t9 'r'		# ra
+
+   lb 	$t0 0($s0)
+   addi $s0 $s0 1
+   bne 	$t0 $t7 asm_regs_error	# si no empieza con $ no es valido
+   lb 	$t0 0($s0)
+   addi $s0 $s0 1
+   beq 	$t0 $t4 asm_regs_zero
+   beq 	$t0 $t6 asm_regs_at	#validare primero si no es $at el que viene
+continue:
    li $t5 'v'			# vX -> valores de retorno
-   li $t4 '0'			# cero
-   				# Completar para los demas registros
-   
-   lb $t0 0($s0)
-   addi $s0 $s0 1
-   bne $t0 $t7 asm_regs_error	# Si no empieza con $ no es valido
-   lb $t0 0($s0)
-   addi $s0 $s0 1
-   beq $t0 $t6 asm_regs_ax	# Verificar a que grupo pertence para sumarle un offset
-   beq $t0 $t5 asm_regs_vx
-   beq $t0 $t4 asm_regs_zero
-   j asm_regs_error		# No es ninguno, es un error
+   beq 	$t0 $t5 asm_regs_vx	# verifico a que grupo pertence para sumarle un offset
+   beq 	$t0 $t6 asm_regs_ax	
+   beq	$t0 $t2 asm_regs_tx
+   beq 	$t0 $t3 asm_regs_sp 	# validare primero si no es $sp el que viene
+continue2:
+   beq 	$t0 $t3 asm_regs_sx
+   beq 	$t0 $t1 asm_regs_kx
+   li 	$t7 'g'			# cargo gp
+   beq  $t0 $t7 asm_regs_gp
+   beq 	$t0 $t8 asm_regs_fp
+   beq 	$t0 $t9 asm_regs_ra	
+   j asm_regs_error		# no es ninguno, entonces es error
 
-asm_regs_zero:			# Caso trivial 
-   li $v0 0
-   j asm_regs_exit
+asm_regs_zero:			# caso trivial, $0 -> 0
+   li 	$v0 0
+   j 	asm_regs_exit
 
-asm_regs_ax:
-   jal ascii_to_int
-   addi $v0 $v0 4		# $a0 es 4, $a1 es 5, etc.
-   j asm_regs_exit
+asm_regs_ax:			# sumamos 4 porque... $a0 -> 4, $a1 -> 5, etc.
+   jal 	ascii_to_int
+   addi $v0 $v0 4
+   j 	asm_regs_exit
 
 asm_regs_vx:
-   jal ascii_to_int
+   jal 	ascii_to_int
    addi $v0 $v0 2
-   j asm_regs_exit
+   j 	asm_regs_exit
+   
+asm_regs_sx:
+   jal 	ascii_to_int
+   addi $v0 $v0 16
+   j 	asm_regs_exit
+   
+asm_regs_tx:
+   jal 	ascii_to_int
+   addi $v0 $v0 8
+   beq	$v0 16 t8_9	# si el registro es $t8
+   beq	$v0 17 t8_9	# si el registro es $t9
+   j 	asm_regs_exit
+t8_9:
+   addi	$v0 $v0 8	# le sumo 8 porque tengo que saltarme  todos los $s
+   j	asm_regs_exit
+
+asm_regs_kx:
+   jal 	ascii_to_int
+   addi $v0 $v0 26
+   j 	asm_regs_exit   
+
+asm_regs_at:
+   lb 	$t7 0($s0)
+   li 	$t5 't'
+   beq	$t7 $t5 es_at
+   j continue
+es_at:
+   li	$v0 1
+   j	asm_regs_exit
+
+asm_regs_gp:
+   li 	$v0 28
+   j 	asm_regs_exit
+	   
+asm_regs_sp:
+   lb 	$t7 0($s0)
+   li 	$t5 'p'
+   beq	$t7 $t5 es_sp
+   j continue2
+es_sp:
+   li	$v0 29
+   j	asm_regs_exit
+   
+asm_regs_fp:
+   li 	$v0 30
+   j	asm_regs_exit
+   
+asm_regs_ra:
+   li	$v0 31
+   j 	asm_regs_exit
 
 asm_regs_exit:
    lw $ra 0($sp)
@@ -266,7 +331,6 @@ ascii_to_int_exit:
 ###########################################
 ######### strcmp ##########################
 ###########################################
-
 strcmp:				# Compara 2 cadenas de caracteres
    li $t2 ' '		
    li $t3 10
