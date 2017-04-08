@@ -9,7 +9,11 @@ msgBCodif: 	.asciiz "Codificando el siguinete programa:\n\n"
 #ADDIU
 #programa:	.asciiz ".text\nmain:\naddiu $a0 $0 40\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #ANDI
-programa:	.asciiz ".text\nmain:\nandi $a0 $0 99\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#programa:	.asciiz ".text\nmain:\nandi $a0 $0 99\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#SLTI
+#programa:	.asciiz ".text\nmain:\nslti $a0 $0 50\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#SLTIU
+programa:	.asciiz ".text\nmain:\nsltiu $a0 $0 0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 ##### FIN DEL PROGRAMA A CODIFICAR #####
 
 errMsg: 		.asciiz "Error!!!\n"
@@ -67,6 +71,8 @@ str_ori:		.asciiz "ori"
 str_syscall:	.asciiz "syscall"
 str_addiu:	.asciiz "addiu"
 str_andi:		.asciiz "andi"
+str_slti:		.asciiz "slti"
+str_sltiu:		.asciiz "sltiu"
 
 .text
 ###################################################
@@ -224,14 +230,24 @@ asm_get_instruction:		# Basicamente, un gran switch que indica que instruccion e
    bne $v0 $0 asm_syscall
    
    move $a0 $s0
-   la 	$a1 str_addiu 
+   la 	$a1 str_addiu 		# verifico si es la instruccion addiu
    jal 	strcmp
    bne	$v0 $0 asm_addiu
    
    move $a0 $s0
-   la 	$a1 str_andi
+   la 	$a1 str_andi		# verifico si es la instruccion andi
    jal 	strcmp
    bne	$v0 $0 asm_andi
+   
+   move $a0 $s0
+   la 	$a1 str_slti		# verifico si es la instruccion slti
+   jal 	strcmp
+   bne	$v0 $0 asm_slti
+   
+   move $a0 $s0
+   la 	$a1 str_sltiu		# verifico si es la instruccion sltiu
+   jal 	strcmp
+   bne	$v0 $0 asm_sltiu
 
    move $a0 $s0			# verifico si es un label
    jal asm_label_check
@@ -309,7 +325,7 @@ asm_addiu:
 ######### asm_andi #########################
 ###########################################
 asm_andi:
-   li $s7 0x0c		# codigo de ori 0x0c
+   li $s7 0x0c		# codigo de andi 0x0c
 	
    sll $s7 $s7 10	# shift porque son 5b de rt + 5b de rs
    addi $s0 $s0 1	# elimino el espacio
@@ -329,6 +345,53 @@ asm_andi:
    addi $s1 $s1 4
    j asm_text_loop
 
+###########################################
+######### asm_slti ###########################
+###########################################
+asm_slti:
+   li $s7 0x0a		# codigo de slti 0x0a
+	
+   sll $s7 $s7 10	# shift porque son 5b de rt + 5b de rs
+   addi $s0 $s0 1	# elimino el espacio
+   jal asm_regs     	# me devuelve el numero del registro
+   add $s7 $s7 $v0	# almaceno el numero del registro en rs
+
+   addi $s0 $s0 1	# elimino el espacio
+   jal asm_regs     	# me devuelve el numero del registro
+   sll $v0 $v0 5	# pongo rs en la posicion que debe ir (van cruzados)
+   or  $s7 $s7 $v0	# almaceno el numero del registro en rt
+ 
+   sll $s7 $s7 16	# le hago shift de 16 para hacer espacio al imm
+   addi $s0 $s0 1	# elimino el espacio
+   jal ascii_to_int	# hago la conversion de ascii a int
+   addu $s7 $s7 $v0 	# concateno el imm con el resto que ya tenia
+   sw $s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop
+   
+###########################################
+######### asm_sltiu ##########################
+###########################################
+asm_sltiu:
+   li $s7 0x0b		# codigo de sltiu 0x0b
+
+   sll $s7 $s7 10	# shift porque son 5b de rt + 5b de rs
+   addi $s0 $s0 1	# elimino el espacio
+   jal asm_regs     	# me devuelve el numero del registro
+   add $s7 $s7 $v0	# almaceno el numero del registro en rs
+
+   addi $s0 $s0 1	# elimino el espacio
+   jal asm_regs     	# me devuelve el numero del registro
+   sll $v0 $v0 5	# pongo rs en la posicion que debe ir (van cruzados)
+   or  $s7 $s7 $v0	# almaceno el numero del registro en rt
+ 
+   sll $s7 $s7 16	# le hago shift de 16 para hacer espacio al imm
+   addi $s0 $s0 1	# elimino el espacio
+   jal ascii_to_int	# hago la conversion de ascii a int
+   addu $s7 $s7 $v0 	# concateno el imm con el resto que ya tenia
+   sw $s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop
 
 ###########################################
 ############# asm_regs ####################
