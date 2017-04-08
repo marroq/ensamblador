@@ -4,7 +4,8 @@ msgBCodif: 	.asciiz "Codificando el siguinete programa:\n\n"
 
 ##### INICIO DEL PROGRAMA A CODIFICAR #####
 ### El programa tiene que quedar en una sola linea, separar las lineas con \n
-programa:	.asciiz ".text\nmain:\nori $a0 $0 10\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#programa:	.asciiz ".text\nmain:\nori $a0 $0 10\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+programa:	.asciiz ".text\nmain:\naddiu $a0 $0 40\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 ##### FIN DEL PROGRAMA A CODIFICAR #####
 
 errMsg: 		.asciiz "Error!!!\n"
@@ -61,6 +62,7 @@ str_data:		.asciiz ".data"
 str_text:		.asciiz ".text"
 str_ori:		.asciiz "ori"
 str_syscall:	.asciiz "syscall"
+str_addiu:	.asciiz "addiu"
 
 .text
 ###################################################
@@ -161,7 +163,7 @@ saveAddress:
 
 ###########################################
 ###### Obtener de la tabla de simbolos ############
-obtener:	
+obtenerTabla:	
    addi $sp $sp -8
    sw	$ra 0($sp)
    sw	$s0 4($sp)
@@ -216,6 +218,11 @@ asm_get_instruction:		# Basicamente, un gran switch que indica que instruccion e
    la $a1 str_syscall
    jal strcmp
    bne $v0 $0 asm_syscall
+   
+   move $a0 $s0
+   la 	$a1 str_addiu 
+   jal 	strcmp
+   bne	$v0 $0 asm_addiu
 
    move $a0 $s0			# verifico si es un label
    jal asm_label_check
@@ -247,6 +254,30 @@ asm_syscall:			# esta instruccion es la mas facil de codificar
 asm_ori:
    li $s7 0x0d		# codigo de ori 0x0d
 
+   sll $s7 $s7 10	# shift porque son 5b de rt + 5b de rs
+   addi $s0 $s0 1	# elimino el espacio
+   jal asm_regs     	# me devuelve el numero del registro
+   add $s7 $s7 $v0	# almaceno el numero del registro en rs
+
+   addi $s0 $s0 1	# elimino el espacio
+   jal asm_regs     	# me devuelve el numero del registro
+   sll $v0 $v0 5	# pongo rs en la posicion que debe ir (van cruzados)
+   or  $s7 $s7 $v0	# almaceno el numero del registro en rt
+ 
+   sll $s7 $s7 16	# le hago shift de 16 para hacer espacio al imm
+   addi $s0 $s0 1	# elimino el espacio
+   jal ascii_to_int	# hago la conversion de ascii a int
+   addu $s7 $s7 $v0 	# concateno el imm con el resto que ya tenia
+   sw $s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop
+   
+###########################################
+######### asm_addi ##########################
+###########################################
+asm_addiu:
+   li $s7 0x09		# codigo de ori 0x0d
+	
    sll $s7 $s7 10	# shift porque son 5b de rt + 5b de rs
    addi $s0 $s0 1	# elimino el espacio
    jal asm_regs     	# me devuelve el numero del registro
