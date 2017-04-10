@@ -17,7 +17,9 @@ msgBCodif: 	.asciiz "Codificando el siguinete programa:\n\n"
 #ADD
 #programa:	.asciiz ".text\nmain:\nadd $a0 $0 $0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #ADDU
-programa:	.asciiz ".text\nmain:\naddu $a0 $0 $0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#programa:	.asciiz ".text\nmain:\naddu $a0 $0 $0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#AND
+programa:	.asciiz ".text\nmain:\nand $a0 $0 $0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 ##### FIN DEL PROGRAMA A CODIFICAR #####
 
 errMsg: 		.asciiz "Error!!!\n"
@@ -83,6 +85,8 @@ str_addu:		.asciiz "addu"
 		.align 2
 str_addiu:	.asciiz "addiu"
 		.align 2		
+str_and:		.asciiz "and"
+		.align 2	
 str_andi:		.asciiz "andi"
 		.align 2
 str_slti:		.asciiz "slti"
@@ -261,6 +265,11 @@ asm_get_instruction:		# Basicamente, un gran switch que indica que instruccion e
    bne	$v0 $0 asm_addiu
    
    move $a0 $s0
+   la 	$a1 str_and 		# verifico si es la instruccion and
+   jal 	strcmp
+   bne	$v0 $0 asm_and
+   
+   move $a0 $s0
    la 	$a1 str_andi		# verifico si es la instruccion andi
    jal 	strcmp
    bne	$v0 $0 asm_andi
@@ -368,7 +377,7 @@ asm_addu:
    or 	$s7 $s7 $v0	# almeceno rt
    
    sll 	$s7 $s7 11	# corro 11 espacios para guardar el código de función
-   addu	$s7 $s7 33	# sumo el codigo de funcion de add
+   addu	$s7 $s7 33	# sumo el codigo de funcion de addu
    sw 	$s7 0($s1)	# almaceno la instruccion codificada
    addi $s1 $s1 4
    j asm_text_loop
@@ -394,6 +403,31 @@ asm_addiu:
    jal ascii_to_int	# hago la conversion de ascii a int
    addu $s7 $s7 $v0 	# concateno el imm con el resto que ya tenia
    sw $s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop
+   
+###########################################
+######### asm_and ##########################
+###########################################
+asm_and:
+   li	$s7 0
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   add 	$s7 $s7 $v0	# almaceno el numero del registro rd
+   
+   addi $s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	
+   sll 	$v0 $v0 10	# pongo rs en la posición que debe ir
+   or 	$s7 $s7 $v0	# almaceno rs
+   
+   addi $s0 $s0 1	#elimino el espacio
+   jal 	asm_regs
+   sll 	$v0 $v0 5	# pongo rt en la posicion que debe ir
+   or 	$s7 $s7 $v0	# almeceno rt
+   
+   sll 	$s7 $s7 11	# corro 11 espacios para guardar el código de función
+   addu	$s7 $s7 36	# sumo el codigo de funcion de and
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
    addi $s1 $s1 4
    j asm_text_loop
 

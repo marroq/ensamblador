@@ -2,7 +2,7 @@ TAL (1 punto cada una)
 add                 YA                
 addu                YA
 addiu               YA
-and
+and                 YA
 andi                YA
 div
 divu
