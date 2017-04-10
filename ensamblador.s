@@ -13,7 +13,9 @@ msgBCodif: 	.asciiz "Codificando el siguinete programa:\n\n"
 #SLTI
 #programa:	.asciiz ".text\nmain:\nslti $a0 $0 50\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #SLTIU
-programa:	.asciiz ".text\nmain:\nsltiu $a0 $0 0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#programa:	.asciiz ".text\nmain:\nsltiu $a0 $0 0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#ADD
+programa:	.asciiz ".text\nmain:\nadd $a0 $0 $0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 ##### FIN DEL PROGRAMA A CODIFICAR #####
 
 errMsg: 		.asciiz "Error!!!\n"
@@ -66,13 +68,23 @@ exit:
 
 .data		# Palabras reservadas (instrucciones y directivas)
 str_data:		.asciiz ".data"
+
 str_text:		.asciiz ".text"
+		.align 2
 str_ori:		.asciiz "ori"
+		.align 2
 str_syscall:	.asciiz "syscall"
-str_addiu:	.asciiz "addiu"
+		.align 2
 str_andi:		.asciiz "andi"
+		.align 2
 str_slti:		.asciiz "slti"
+		.align 2
 str_sltiu:		.asciiz "sltiu"
+		.align 2
+str_add:		.asciiz "add"
+		.align 2
+str_addiu:	.asciiz "addiu"
+		.align 2
 
 .text
 ###################################################
@@ -136,7 +148,7 @@ asm_exit:
    move $v0 $a1			# Devolvemos el buffer (la dirección que recibimos en $a1)
    addi $sp $sp 40
    jr $ra
-
+	
 ###########################################
 ###### Funciones ##########################
 ###########################################
@@ -229,6 +241,12 @@ asm_get_instruction:		# Basicamente, un gran switch que indica que instruccion e
    jal strcmp
    bne $v0 $0 asm_syscall
    
+   move	$a0 $s0
+   la 	$a1 str_add 		# verifico si es la instruccion add
+   jal 	strcmp
+   bne	$v0 $0 asm_add
+
+   
    move $a0 $s0
    la 	$a1 str_addiu 		# verifico si es la instruccion addiu
    jal 	strcmp
@@ -248,7 +266,7 @@ asm_get_instruction:		# Basicamente, un gran switch que indica que instruccion e
    la 	$a1 str_sltiu		# verifico si es la instruccion sltiu
    jal 	strcmp
    bne	$v0 $0 asm_sltiu
-
+   
    move $a0 $s0			# verifico si es un label
    jal asm_label_check
    bne $v0 $0 asm_label
@@ -390,6 +408,31 @@ asm_sltiu:
    jal ascii_to_int	# hago la conversion de ascii a int
    addu $s7 $s7 $v0 	# concateno el imm con el resto que ya tenia
    sw $s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop
+   
+###########################################
+######### asm_add ##########################
+###########################################
+asm_add:
+   li	$s7 0
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   add 	$s7 $s7 $v0	# almaceno el numero del registro rd
+   
+   addi $s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	
+   sll 	$v0 $v0 10	# pongo rs en la posición que debe ir
+   or 	$s7 $s7 $v0	# almaceno rs
+   
+   addi $s0 $s0 1	#elimino el espacio
+   jal 	asm_regs
+   sll 	$v0 $v0 5	# pongo rt en la posicion que debe ir
+   or 	$s7 $s7 $v0	# almeceno rt
+   
+   sll 	$s7 $s7 11	# corro 11 espacios para guardar el código de función
+   addu	$s7 $s7 32	# sumo el codigo de funcion de add
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
    addi $s1 $s1 4
    j asm_text_loop
 
