@@ -26,7 +26,11 @@ msgBCodif: 	.asciiz "Codificando el siguinete programa:\n\n"
 #SUB
 #programa:	.asciiz ".text\nmain:\nsub $a0 $0 $0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #SUBU
-programa:	.asciiz ".text\nmain:\nsubu $a0 $0 $0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#programa:	.asciiz ".text\nmain:\nsubu $a0 $0 $0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#SLT
+#programa:	.asciiz ".text\nmain:\nslt $a0 $0 $0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#SLTU
+programa:	.asciiz ".text\nmain:\nsltu $a0 $0 $0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 ##### FIN DEL PROGRAMA A CODIFICAR #####
 
 errMsg: 		.asciiz "Error!!!\n"
@@ -701,10 +705,50 @@ asm_lui:
 ###########################################
 ######### asm_slt ##########################
 asm_slt:
+   li	$s7 0
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   add 	$s7 $s7 $v0	# almaceno el numero del registro rd
+   
+   addi $s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	
+   sll 	$v0 $v0 10	# pongo rs en la posición que debe ir
+   or 	$s7 $s7 $v0	# almaceno rs
+   
+   addi $s0 $s0 1	#elimino el espacio
+   jal 	asm_regs
+   sll 	$v0 $v0 5	# pongo rt en la posicion que debe ir
+   or 	$s7 $s7 $v0	# almeceno rt
+   
+   sll 	$s7 $s7 11	# corro 11 espacios para guardar el código de función
+   addu	$s7 $s7 42	# sumo el codigo de funcion de slt
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop
 
 ###########################################
 ######### asm_sltu ##########################
 asm_sltu:
+   li	$s7 0
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   add 	$s7 $s7 $v0	# almaceno el numero del registro rd
+   
+   addi $s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	
+   sll 	$v0 $v0 10	# pongo rs en la posición que debe ir
+   or 	$s7 $s7 $v0	# almaceno rs
+   
+   addi $s0 $s0 1	#elimino el espacio
+   jal 	asm_regs
+   sll 	$v0 $v0 5	# pongo rt en la posicion que debe ir
+   or 	$s7 $s7 $v0	# almeceno rt
+   
+   sll 	$s7 $s7 11	# corro 11 espacios para guardar el código de función
+   addu	$s7 $s7 43	# sumo el codigo de funcion de sltu
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop
 
 ###########################################
 ######### asm_slti ###########################

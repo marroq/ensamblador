@@ -17,8 +17,8 @@ srlv
 sub                 YA            
 subu                YA
 lui                 
-slt
-sltu
+slt                 YA
+sltu                YA
 slti                YA
 sltiu               YA
 lw
