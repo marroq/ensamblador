@@ -4,19 +4,19 @@ addu                YA
 addiu               YA
 and                 YA
 andi                YA
-div
+div                 
 divu
 mult
 multu
-or
-sll
+or                  YA
+sll                 
 sllv
 sra
 srl
 srlv
-sub
-subu
-lui
+sub                 YA            
+subu                YA
+lui                 
 slt
 sltu
 slti                YA

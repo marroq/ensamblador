@@ -19,7 +19,14 @@ msgBCodif: 	.asciiz "Codificando el siguinete programa:\n\n"
 #ADDU
 #programa:	.asciiz ".text\nmain:\naddu $a0 $0 $0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #AND
-programa:	.asciiz ".text\nmain:\nand $a0 $0 $0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#programa:	.asciiz ".text\nmain:\nand $a0 $0 $0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#OR
+#programa:	.asciiz ".text\nmain:\nor $a0 $0 $0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#programa:	.asciiz ".text\nmain:\nori $t0 $0 5\nadd $t1 $t0 $0\nandi $a0 $t1 6\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#SUB
+#programa:	.asciiz ".text\nmain:\nsub $a0 $0 $0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#SUBU
+programa:	.asciiz ".text\nmain:\nsubu $a0 $0 $0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 ##### FIN DEL PROGRAMA A CODIFICAR #####
 
 errMsg: 		.asciiz "Error!!!\n"
@@ -89,15 +96,52 @@ str_and:		.asciiz "and"
 		.align 2	
 str_andi:		.asciiz "andi"
 		.align 2
+str_div:		.asciiz "div"
+		.align 2
+str_divu:		.asciiz "divu"
+		.align 2
+str_mult:		.asciiz "mult"
+		.align 2
+str_multu:	.asciiz "multu"
+		.align 2
+str_or:		.asciiz "or"
+		.align 2
+str_sll:		.asciiz "sll"
+		.align 2
+str_sllv:		.asciiz "sllv"
+		.align 2
+str_sra:		.asciiz "sra"
+		.align 2
+str_srl:		.asciiz "srl"
+		.align 2
+str_srlv:		.asciiz "srlv"
+		.align 2
+str_sub:		.asciiz "sub"
+		.align 2
+str_subu:		.asciiz "subu"
+		.align 2
+str_lui:		.asciiz "lui"
+		.align 2
+str_slt:		.asciiz "slt"
+		.align 2
+str_sltu:		.asciiz "sltu"
+		.align 2
 str_slti:		.asciiz "slti"
 		.align 2
 str_sltiu:		.asciiz "sltiu"
 		.align 2
+str_lw:		.asciiz "lw"
+		.align 2
+str_sw:		.asciiz "sw"
+		.align 2
+str_mfhi:		.asciiz "mfhi"
+		.align 2
+str_mflo:		.asciiz "mflo"
+		.align 2
 
 .text
 ###################################################
-############ funcion ensamblador ##################
-###################################################
+############ funcion ensamblador #######################
 ensamblador:
 # Entrada, almaceno variables a utilizar
    addi $sp $sp -40
@@ -239,11 +283,6 @@ asm_get_instruction:		# Basicamente, un gran switch que indica que instruccion e
    jal strcmp
    bne $v0 $0 asm_text_loop
 
-   move $a0 $s0			# verifico si es la instruccion ori
-   la $a1 str_ori
-   jal strcmp
-   bne $v0 $0 asm_ori
-
    move $a0 $s0			# verifico si es la instruccion syscall
    la $a1 str_syscall
    jal strcmp
@@ -275,6 +314,86 @@ asm_get_instruction:		# Basicamente, un gran switch que indica que instruccion e
    bne	$v0 $0 asm_andi
    
    move $a0 $s0
+   la 	$a1 str_div		# verifico si es la instruccion div
+   jal 	strcmp
+   bne	$v0 $0 asm_div
+   
+   move $a0 $s0
+   la 	$a1 str_divu		# verifico si es la instruccion divu
+   jal 	strcmp
+   bne	$v0 $0 asm_divu
+   
+   move $a0 $s0
+   la 	$a1 str_mult		# verifico si es la instruccion mult
+   jal 	strcmp
+   bne	$v0 $0 asm_mult
+   
+   move $a0 $s0
+   la 	$a1 str_multu		# verifico si es la instruccion multu
+   jal 	strcmp
+   bne	$v0 $0 asm_multu
+   
+   move $a0 $s0
+   la 	$a1 str_or		# verifico si es la instruccion or
+   jal 	strcmp
+   bne	$v0 $0 asm_or
+   
+   move $a0 $s0			# verifico si es la instruccion ori
+   la $a1 str_ori
+   jal strcmp
+   bne $v0 $0 asm_ori
+   
+   move $a0 $s0
+   la 	$a1 str_sll		# verifico si es la instruccion sll
+   jal 	strcmp
+   bne	$v0 $0 asm_sll
+   
+   move $a0 $s0
+   la 	$a1 str_sllv		# verifico si es la instruccion sllv
+   jal 	strcmp
+   bne	$v0 $0 asm_sllv
+   
+   move $a0 $s0
+   la 	$a1 str_sra		# verifico si es la instruccion sra
+   jal 	strcmp
+   bne	$v0 $0 asm_sra
+   
+   move $a0 $s0
+   la 	$a1 str_srl		# verifico si es la instruccion srl
+   jal 	strcmp
+   bne	$v0 $0 asm_srl
+   
+   move $a0 $s0
+   la 	$a1 str_srlv		# verifico si es la instruccion srlv
+   jal 	strcmp
+   bne	$v0 $0 asm_srlv
+   
+   move $a0 $s0
+   la 	$a1 str_sub		# verifico si es la instruccion sub
+   jal 	strcmp
+   bne	$v0 $0 asm_sub
+   
+   move $a0 $s0
+   la 	$a1 str_subu		# verifico si es la instruccion subu
+   jal 	strcmp
+   bne	$v0 $0 asm_subu
+   
+   move $a0 $s0
+   la 	$a1 str_lui		# verifico si es la instruccion lui
+   jal 	strcmp
+   bne	$v0 $0 asm_lui
+   
+   move $a0 $s0
+   la 	$a1 str_slt		# verifico si es la instruccion slt
+   jal 	strcmp
+   bne	$v0 $0 asm_slt
+   
+   move $a0 $s0
+   la 	$a1 str_sltu		# verifico si es la instruccion sltu
+   jal 	strcmp
+   bne	$v0 $0 asm_sltu
+   
+   move $a0 $s0
    la 	$a1 str_slti		# verifico si es la instruccion slti
    jal 	strcmp
    bne	$v0 $0 asm_slti
@@ -284,6 +403,26 @@ asm_get_instruction:		# Basicamente, un gran switch que indica que instruccion e
    jal 	strcmp
    bne	$v0 $0 asm_sltiu
    
+   move $a0 $s0
+   la 	$a1 str_lw		# verifico si es la instruccion lw
+   jal 	strcmp
+   bne	$v0 $0 asm_lw
+   
+   move $a0 $s0
+   la 	$a1 str_sw		# verifico si es la instruccion sw
+   jal 	strcmp
+   bne	$v0 $0 asm_sw
+   
+   move $a0 $s0
+   la 	$a1 str_mfhi		# verifico si es la instruccion mfhi
+   jal 	strcmp
+   bne	$v0 $0 asm_mfhi
+   
+   move $a0 $s0
+   la 	$a1 str_mflo		# verifico si es la instruccion mflo
+   jal 	strcmp
+   bne	$v0 $0 asm_mflo
+   
    move $a0 $s0			# verifico si es un label
    jal asm_label_check
    bne $v0 $0 asm_label
@@ -292,7 +431,6 @@ asm_get_instruction:		# Basicamente, un gran switch que indica que instruccion e
 
 ###########################################
 ######### asm_label #######################
-###########################################
 asm_label:			# codigo a ejecutarse en caso que sea un label
    lb $t0 0($s0)		# la tabla de simbolos se debe llenar con las etiquetas
    addi $s0 $s0 1
@@ -301,7 +439,6 @@ asm_label:			# codigo a ejecutarse en caso que sea un label
 
 ###########################################
 ######### asm_syscall #####################
-###########################################
 asm_syscall:			# esta instruccion es la mas facil de codificar
    la $t0 0x0000000c
    sw $t0 0($s1)
@@ -310,7 +447,6 @@ asm_syscall:			# esta instruccion es la mas facil de codificar
 
 ###########################################
 ######### asm_ori #########################
-###########################################
 asm_ori:
    li $s7 0x0d		# codigo de ori 0x0d
 
@@ -334,7 +470,6 @@ asm_ori:
    
 ###########################################
 ######### asm_add ##########################
-###########################################
 asm_add:
    li	$s7 0
    addi	$s0 $s0 1	# elimino el espacio
@@ -359,7 +494,6 @@ asm_add:
    
 ###########################################
 ######### asm_addu #########################
-###########################################
 asm_addu:
    li	$s7 0
    addi	$s0 $s0 1	# elimino el espacio
@@ -384,7 +518,6 @@ asm_addu:
    
 ###########################################
 ######### asm_addiu #########################
-###########################################
 asm_addiu:
    li $s7 0x09		# codigo de addiu 0x09
 	
@@ -408,7 +541,6 @@ asm_addiu:
    
 ###########################################
 ######### asm_and ##########################
-###########################################
 asm_and:
    li	$s7 0
    addi	$s0 $s0 1	# elimino el espacio
@@ -433,7 +565,6 @@ asm_and:
 
 ###########################################
 ######### asm_andi #########################
-###########################################
 asm_andi:
    li $s7 0x0c		# codigo de andi 0x0c
 	
@@ -454,10 +585,129 @@ asm_andi:
    sw $s7 0($s1)	# almaceno la instruccion codificada
    addi $s1 $s1 4
    j asm_text_loop
+   
+###########################################
+######### asm_div ##########################
+asm_div:
+
+###########################################
+######### asm_divu ##########################
+asm_divu:
+
+###########################################
+######### asm_mult ##########################
+asm_mult:
+
+###########################################
+######### asm_multu ##########################
+asm_multu:
+   
+###########################################
+######### asm_or ###########################
+asm_or:
+   li	$s7 0
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   add 	$s7 $s7 $v0	# almaceno el numero del registro rd
+   
+   addi $s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	
+   sll 	$v0 $v0 10	# pongo rs en la posición que debe ir
+   or 	$s7 $s7 $v0	# almaceno rs
+   
+   addi $s0 $s0 1	#elimino el espacio
+   jal 	asm_regs
+   sll 	$v0 $v0 5	# pongo rt en la posicion que debe ir
+   or 	$s7 $s7 $v0	# almeceno rt
+   
+   sll 	$s7 $s7 11	# corro 11 espacios para guardar el código de función
+   addu	$s7 $s7 37	# sumo el codigo de funcion de or
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop
+   
+###########################################
+######### asm_sll ##########################
+asm_sll:
+
+###########################################
+######### asm_sllv ##########################
+asm_sllv:
+
+###########################################
+######### asm_sra ##########################
+asm_sra:
+
+###########################################
+######### asm_srl ##########################
+asm_srl:
+
+###########################################
+######### asm_srlv ##########################
+asm_srlv:
+
+###########################################
+######### asm_sub ##########################
+asm_sub:
+   li	$s7 0
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   add 	$s7 $s7 $v0	# almaceno el numero del registro rd
+   
+   addi $s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	
+   sll 	$v0 $v0 10	# pongo rs en la posición que debe ir
+   or 	$s7 $s7 $v0	# almaceno rs
+   
+   addi $s0 $s0 1	#elimino el espacio
+   jal 	asm_regs
+   sll 	$v0 $v0 5	# pongo rt en la posicion que debe ir
+   or 	$s7 $s7 $v0	# almeceno rt
+   
+   sll 	$s7 $s7 11	# corro 11 espacios para guardar el código de función
+   addu	$s7 $s7 34	# sumo el codigo de funcion de sub
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop
+
+###########################################
+######### asm_subu ##########################
+asm_subu:
+   li	$s7 0
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   add 	$s7 $s7 $v0	# almaceno el numero del registro rd
+   
+   addi $s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	
+   sll 	$v0 $v0 10	# pongo rs en la posición que debe ir
+   or 	$s7 $s7 $v0	# almaceno rs
+   
+   addi $s0 $s0 1	#elimino el espacio
+   jal 	asm_regs
+   sll 	$v0 $v0 5	# pongo rt en la posicion que debe ir
+   or 	$s7 $s7 $v0	# almeceno rt
+   
+   sll 	$s7 $s7 11	# corro 11 espacios para guardar el código de función
+   addu	$s7 $s7 35	# sumo el codigo de funcion de subu
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop
+
+###########################################
+######### asm_lui ##########################
+asm_lui:
+
+###########################################
+######### asm_slt ##########################
+asm_slt:
+
+###########################################
+######### asm_sltu ##########################
+asm_sltu:
 
 ###########################################
 ######### asm_slti ###########################
-###########################################
 asm_slti:
    li $s7 0x0a		# codigo de slti 0x0a
 	
@@ -481,7 +731,6 @@ asm_slti:
    
 ###########################################
 ######### asm_sltiu ##########################
-###########################################
 asm_sltiu:
    li $s7 0x0b		# codigo de sltiu 0x0b
 
@@ -504,8 +753,23 @@ asm_sltiu:
    j asm_text_loop
    
 ###########################################
-############# asm_regs ####################
+######### asm_lw ##########################
+asm_lw:
+
 ###########################################
+######### asm_sw ##########################
+asm_sw:
+
+###########################################
+######### asm_mfhi ##########################
+asm_mfhi:
+
+###########################################
+######### asm_mflo ##########################
+asm_mflo:
+
+###########################################
+############# asm_regs ####################
 asm_regs:		# pasa de $xN -> N ej. $s0 -> 16
    addi $sp $sp -4	
    sw $ra 0($sp)
