@@ -15,7 +15,7 @@ msgBCodif: 	.asciiz "Codificando el siguinete programa:\n\n"
 #SLTIU
 #programa:	.asciiz ".text\nmain:\nsltiu $a0 $0 0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #ADD
-#programa:	.asciiz ".text\nmain:\nadd $a0 $0 $0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#programa:	.asciiz ".text\nmain:\naddi $a0 $0 40\naddi $t0 $0 30\nadd $a0 $a0 $t0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #ADDU
 #programa:	.asciiz ".text\nmain:\naddu $a0 $0 $0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #AND
@@ -33,7 +33,7 @@ msgBCodif: 	.asciiz "Codificando el siguinete programa:\n\n"
 #programa:	.asciiz ".text\nmain:\naddi $t0 $0 6\naddi $t1 $0 3\ndivu $t0 $t1\nmfhi $a0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #MULT/U
 #programa:	.asciiz ".text\nmain:\naddi $t0 $0 6\naddi $t1 $0 3\nmult $t0 $t1\nmflo $a0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
-#div_mult
+#div_mult_testcase
 #programa:	.asciiz ".text\nmain:\nori $s0 $0 3\nori $s1 $0 4\nori $s3 $0 6\nmult $s0 $s1\nmflo $s7\ndiv $s7 $s3\nmflo $a0\nori $v0 $0 1\nsyscall\nmfhi $a0\nori $v0 $0 1\nsyscall\nmultu $s0 $s1\nmflo $s7\ndivu $s7 $s3\nmflo $a0\nori $v0 $0 1\nsyscall\nmfhi $a0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #SLL
 #programa:	.asciiz ".text\nmain:\naddi $t0 $0 5\nsll $a0 $t0 2\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
@@ -46,7 +46,14 @@ msgBCodif: 	.asciiz "Codificando el siguinete programa:\n\n"
 #SRLV
 #programa:	.asciiz ".text\nmain:\naddi $t0 $0 1\naddi $t1 $0 9\nsrlv $a0 $t1 $t0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #LUI
-programa:	.asciiz ".text\nmain:\nlui $a0 500\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#programa:	.asciiz ".text\nmain:\nlui $a0 500\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#aritmetic_testcase
+#programa:	.asciiz ".text\nmain:\nori $s0 $0 7\nori $s1 $0 5\nori $s2 $0 15\nori $s3 $0 2\nori $s4 $0 28\nori $s5 $0 4093\nlui $s6 65535\nori $s6 $s6 65534\nadd $s7 $s1 $s0\nsub $s7 $s7 $s3\nadd $a0 $s7 $0\nori $v0 $0 1\nsyscall\naddi $s7 $s7 1\naddu $s7 $s7 $s6\nsubu $s7 $s7 $s6\nadd $a0 $s7 $0\nori $v0 $0 1\nsyscall\naddiu $s7 $0 32767\nand $s7 $s7 $s6\nandi $s7 $s7 240\nor $s7 $s7 $s2\nadd $a0 $s7 $0\nori $v0 $0 1\nsyscall\nsll $s7 $s6 8\nsrl $s7 $s7 16\nsllv $s7 $s7 $s4\nsrlv $s7 $s7 $s4\nadd $a0 $s7 $0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#compara_testcase
+programa:	.asciiz ".text\nmain:\nlui $s0 65535\nori $s0 $s0 65535\nslt $a0 $s0 $0\nori $v0 $0 1\nsyscall\nslti $a0 $s0 0\nori $v0 $0 1\nsyscall\nsltu $a0 $s0 $0\nori $v0 $0 1\nsyscall\nsltiu $a0 $s0 0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#registros_testcase
+#programa:	.asciiz ".text\nmain:\nori $s0 $0 0\nadd $a0 $s0 $0\nori $v0 $0 1\nsyscall\nori $s1 $0 1\nadd $a0 $s1 $0\nori $v0 $0 1\nsyscall\nori $s2 $0 2\nadd $a0 $s2 $0\nori $v0 $0 1\nsyscall\nori $s3 $0 3\nadd $a0 $s3 $0\nori $v0 $0 1\nsyscall\nori $s4 $0 4\nadd $a0 $s4 $0\nori $v0 $0 1\nsyscall\nori $s5 $0 5\nadd $a0 $s5 $0\nori $v0 $0 1\nsyscall\nori $s6 $0 6\nadd $a0 $s6 $0\nori $v0 $0 1\nsyscall\nori $s7 $0 7\nadd $a0 $s7 $0\nori $v0 $0 1\nsyscall\nori $t0 $0 0\nadd $a0 $t0 $0\nori $v0 $0 1\nsyscall\nori $t1 $0 1\nadd $a0 $t1 $0\nori $v0 $0 1\nsyscall\nori $t2 $0 2\nadd $a0 $t2 $0\nori $v0 $0 1\nsyscall\nori $t3 $0 3\nadd $a0 $t3 $0\nori $v0 $0 1\nsyscall\nori $t4 $0 4\nadd $a0 $t4 $0\nori $v0 $0 1\nsyscall\nori $t5 $0 5\nadd $a0 $t5 $0\nori $v0 $0 1\nsyscall\nori $t6 $0 6\nadd $a0 $t6 $0\nori $v0 $0 1\nsyscall\nori $t7 $0 7\nadd $a0 $t7 $0\nori $v0 $0 1\nsyscall\nori $t8 $0 8\nadd $a0 $t8 $0\nori $v0 $0 1\nsyscall\nori $t9 $0 9\nadd $a0 $t9 $0\nori $v0 $0 1\nsyscall\nori $v0 $0 0\nadd $a0 $v0 $0\nori $v0 $0 1\nsyscall\nori $v1 $0 1\nadd $a0 $v1 $0\nori $v0 $0 1\nsyscall\nori $a0 $0 0\nadd $a0 $a0 $0\nori $v0 $0 1\nsyscall\nori $a1 $0 1\nadd $a0 $a1 $0\nori $v0 $0 1\nsyscall\nori $a2 $0 2\nadd $a0 $a2 $0\nori $v0 $0 1\nsyscall\nori $a3 $0 3\nadd $a0 $a3 $0\nori $v0 $0 1\nsyscall\naddi $a0 $sp 4\nori $ra $0 0\nadd $a0 $ra $0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+		.align 2
 
 ##### FIN DEL PROGRAMA A CODIFICAR #####
 
@@ -100,7 +107,7 @@ exit:
 
 .data		# Palabras reservadas (instrucciones y directivas)
 str_data:		.asciiz ".data"
-
+		.align 2
 str_text:		.asciiz ".text"
 		.align 2
 str_ori:		.asciiz "ori"
@@ -108,6 +115,8 @@ str_ori:		.asciiz "ori"
 str_syscall:	.asciiz "syscall"
 		.align 2
 str_add:		.asciiz "add"
+		.align 2
+str_addi:		.asciiz "addi"
 		.align 2
 str_addu:		.asciiz "addu"
 		.align 2
@@ -159,6 +168,28 @@ str_mfhi:		.asciiz "mfhi"
 		.align 2
 str_mflo:		.asciiz "mflo"
 		.align 2
+str_move:	.asciiz "move"
+		.align 2
+str_neg:		.asciiz "neg"
+		.align 2
+str_mul:		.asciiz "mul"
+		.align 2
+str_divM:		.asciiz "div"
+		.align 2
+str_abs:		.asciiz "abs"
+		.align 2
+str_ror:		.asciiz "ror"
+		.align 2
+str_rol:		.asciiz "rol"
+		.align 2
+str_seq:		.asciiz "seq"
+		.align 2
+str_sne:		.asciiz "sne"
+		.align 2
+str_li:		.asciiz "li"
+		.align 2
+str_la:		.asciiz "la"
+		.align 2								
 
 .text
 ###################################################
@@ -315,6 +346,11 @@ asm_get_instruction:		# Basicamente, un gran switch que indica que instruccion e
    bne	$v0 $0 asm_add
 
    move	$a0 $s0
+   la 	$a1 str_addi 		# verifico si es la instruccion addi
+   jal 	strcmp
+   bne	$v0 $0 asm_addi
+
+   move	$a0 $s0
    la 	$a1 str_addu 		# verifico si es la instruccion addu
    jal 	strcmp
    bne	$v0 $0 asm_addu
@@ -444,6 +480,61 @@ asm_get_instruction:		# Basicamente, un gran switch que indica que instruccion e
    jal 	strcmp
    bne	$v0 $0 asm_mflo
    
+   move $a0 $s0
+   la 	$a1 str_move		# verifico si es la instruccion move
+   jal 	strcmp
+   bne	$v0 $0 asm_move
+   
+   move $a0 $s0
+   la 	$a1 str_neg		# verifico si es la instruccion neg
+   jal 	strcmp
+   bne	$v0 $0 asm_neg
+   
+   move $a0 $s0
+   la 	$a1 str_mul		# verifico si es la instruccion mul
+   jal 	strcmp
+   bne	$v0 $0 asm_mul
+   
+   move $a0 $s0
+   la 	$a1 str_divM		# verifico si es la instruccion divMal
+   jal 	strcmp
+   bne	$v0 $0 asm_divM
+   
+   move $a0 $s0
+   la 	$a1 str_abs		# verifico si es la instruccion abs
+   jal 	strcmp
+   bne	$v0 $0 asm_abs
+   
+   move $a0 $s0
+   la 	$a1 str_ror		# verifico si es la instruccion ror
+   jal 	strcmp
+   bne	$v0 $0 asm_ror
+   
+   move $a0 $s0
+   la 	$a1 str_rol		# verifico si es la instruccion rol
+   jal 	strcmp
+   bne	$v0 $0 asm_rol
+   
+   move $a0 $s0
+   la 	$a1 str_seq		# verifico si es la instruccion seq
+   jal 	strcmp
+   bne	$v0 $0 asm_seq
+   
+   move $a0 $s0
+   la 	$a1 str_sne		# verifico si es la instruccion sne
+   jal 	strcmp
+   bne	$v0 $0 asm_sne
+   
+   move $a0 $s0
+   la 	$a1 str_li		# verifico si es la instruccion li
+   jal 	strcmp
+   bne	$v0 $0 asm_li
+   
+   move $a0 $s0
+   la 	$a1 str_la		# verifico si es la instruccion la
+   jal 	strcmp
+   bne	$v0 $0 asm_la
+   
    move $a0 $s0			# verifico si es un label
    jal asm_label_check
    bne $v0 $0 asm_label
@@ -512,7 +603,30 @@ asm_add:
    sw 	$s7 0($s1)	# almaceno la instruccion codificada
    addi $s1 $s1 4
    j asm_text_loop
-   
+
+###########################################
+######### asm_addi ##########################
+asm_addi:
+   li $s7 0x08		# codigo de addi 0x08
+	
+   sll $s7 $s7 10	# shift porque son 5b de rt + 5b de rs
+   addi $s0 $s0 1	# elimino el espacio
+   jal asm_regs     	# me devuelve el numero del registro
+   add $s7 $s7 $v0	# almaceno el numero del registro en rs
+	
+   addi $s0 $s0 1	# elimino el espacio
+   jal asm_regs     	# me devuelve el numero del registro
+   sll $v0 $v0 5	# pongo rs en la posicion que debe ir (van cruzados)
+   or  $s7 $s7 $v0	# almaceno el numero del registro en rt
+ 
+   sll $s7 $s7 16	# le hago shift de 16 para hacer espacio al imm
+   addi $s0 $s0 1	# elimino el espacio
+   jal ascii_to_int	# hago la conversion de ascii a int
+   addu $s7 $s7 $v0 	# concateno el imm con el resto que ya tenia
+   sw $s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop	
+         
 ###########################################
 ######### asm_addu #########################
 asm_addu:
@@ -1027,6 +1141,50 @@ asm_mflo:
    sw 	$s7 0($s1)	# almaceno la instruccion codificada
    addi $s1 $s1 4
    j asm_text_loop
+   
+###########################################
+######### asm_move ##########################
+asm_move:
+
+###########################################
+######### asm_neg ##########################
+asm_neg:
+
+###########################################
+######### asm_mul ##########################
+asm_mul:
+
+###########################################
+######### asm_divM ##########################
+asm_divM:
+
+###########################################
+######### asm_abs ##########################
+asm_abs:
+
+###########################################
+######### asm_ror ##########################
+asm_ror:
+
+###########################################
+######### asm_rol ##########################
+asm_rol:
+
+###########################################
+######### asm_seq ##########################
+asm_seq:
+
+###########################################
+######### asm_sne ##########################
+asm_sne:
+
+###########################################
+######### asm_li ##########################
+asm_li:
+
+###########################################
+######### asm_la ##########################
+asm_la:
 
 ###########################################
 ############# asm_regs ####################
