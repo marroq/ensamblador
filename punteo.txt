@@ -4,10 +4,10 @@ addu                YA
 addiu               YA
 and                 YA
 andi                YA
-div                 
-divu
-mult
-multu
+div                 YA
+divu                YA
+mult                YA
+multu               YA
 or                  YA
 sll                 
 sllv
@@ -23,8 +23,8 @@ slti                YA
 sltiu               YA
 lw
 sw
-mfhi                
-mflo
+mfhi                YA
+mflo                YA
 
 Pseudoinstrucciones (11 puntos cada una)
 move

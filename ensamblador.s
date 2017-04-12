@@ -29,8 +29,11 @@ msgBCodif: 	.asciiz "Codificando el siguinete programa:\n\n"
 #programa:	.asciiz ".text\nmain:\nsubu $a0 $0 $0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #SLT
 #programa:	.asciiz ".text\nmain:\nslt $a0 $0 $0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
-#SLTU
-programa:	.asciiz ".text\nmain:\nsltu $a0 $0 $0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#DIV/U- T.R.
+#programa:	.asciiz ".text\nmain:\naddi $t0 $0 6\naddi $t1 $0 3\ndivu $t0 $t1\nmfhi $a0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#MULT/U
+programa:	.asciiz ".text\nmain:\naddi $t0 $0 6\naddi $t1 $0 3\nmult $t0 $t1\nmflo $a0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+
 ##### FIN DEL PROGRAMA A CODIFICAR #####
 
 errMsg: 		.asciiz "Error!!!\n"
@@ -581,7 +584,7 @@ asm_andi:
    jal asm_regs     	# me devuelve el numero del registro
    sll $v0 $v0 5	# pongo rs en la posicion que debe ir (van cruzados)
    or  $s7 $s7 $v0	# almaceno el numero del registro en rt
- 
+ 	
    sll $s7 $s7 16	# le hago shift de 16 para hacer espacio al imm
    addi $s0 $s0 1	# elimino el espacio
    jal ascii_to_int	# hago la conversion de ascii a int
@@ -593,18 +596,82 @@ asm_andi:
 ###########################################
 ######### asm_div ##########################
 asm_div:
+   li $s7 0
+   
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   add 	$s7 $s7 $v0	# almaceno el numero del registro rs
+   
+   addi	$s0 $s0 1	# elimino el espacio
+   sll 	$s7 $s7 5	# corro rs 5 espacios
+   jal 	asm_regs	# me devuelve el numero del registro
+   add  $s7 $s7 $v0	# almaceno rt 
+   
+   sll 	$s7 $s7 16	# pongo a rs y rt en sus posiciones
+   addu $s7 $s7 26	# almaceno el codigo de la funcion
+   sw $s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop
 
 ###########################################
 ######### asm_divu ##########################
 asm_divu:
+   li $s7 0
+   
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   add 	$s7 $s7 $v0	# almaceno el numero del registro rs
+   
+   addi	$s0 $s0 1	# elimino el espacio
+   sll 	$s7 $s7 5	# corro rs 5 espacios
+   jal 	asm_regs	# me devuelve el numero del registro
+   add  $s7 $s7 $v0	# almaceno rt 
+   
+   sll 	$s7 $s7 16	# pongo a rs y rt en sus posiciones
+   addu $s7 $s7 27	# almaceno el codigo de la funcion
+   sw $s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop
 
 ###########################################
 ######### asm_mult ##########################
 asm_mult:
+   li $s7 0
+   
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   add 	$s7 $s7 $v0	# almaceno el numero del registro rs
+   
+   addi	$s0 $s0 1	# elimino el espacio
+   sll 	$s7 $s7 5	# corro rs 5 espacios
+   jal 	asm_regs	# me devuelve el numero del registro
+   add  $s7 $s7 $v0	# almaceno rt 
+   
+   sll 	$s7 $s7 16	# pongo a rs y rt en sus posiciones
+   addu $s7 $s7 24	# almaceno el codigo de la funcion
+   sw $s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop
 
 ###########################################
 ######### asm_multu ##########################
 asm_multu:
+   li $s7 0
+   
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   add 	$s7 $s7 $v0	# almaceno el numero del registro rs
+   
+   addi	$s0 $s0 1	# elimino el espacio
+   sll 	$s7 $s7 5	# corro rs 5 espacios
+   jal 	asm_regs	# me devuelve el numero del registro
+   add  $s7 $s7 $v0	# almaceno rt 
+   
+   sll 	$s7 $s7 16	# pongo a rs y rt en sus posiciones
+   addu $s7 $s7 25	# almaceno el codigo de la funcion
+   sw $s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop
    
 ###########################################
 ######### asm_or ###########################
@@ -807,10 +874,32 @@ asm_sw:
 ###########################################
 ######### asm_mfhi ##########################
 asm_mfhi:
+   li $s7 0
+   
+   addi $s0 $s0 1	# elimino el espacio
+   jal asm_regs    	# me devuelve el numero del registro
+   sll $v0 $v0 11	# hago un corrimiento de 11 posiciones en el valor del registro
+   or $s7 $s7 $v0	# coloco el registro en su posicion
+   
+   addu $s7 $s7 16	# sumo el codigo de mfhi
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop
 
 ###########################################
 ######### asm_mflo ##########################
 asm_mflo:
+   li $s7 0
+   
+   addi $s0 $s0 1	# elimino el espacio
+   jal asm_regs     	# me devuelve el numero del registro
+   sll $v0 $v0 11	# hago un corrimiento de 11 posiciones en el valor del registro
+   or $s7 $s7 $v0	# coloco el registro en su posicion
+   
+   addu $s7 $s7 18	# sumo el codigo de mflo
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop
 
 ###########################################
 ############# asm_regs ####################
