@@ -9,11 +9,11 @@ divu                YA
 mult                YA
 multu               YA
 or                  YA
-sll                 
-sllv
-sra
-srl
-srlv
+sll                 YA
+sllv                YA
+sra                 YA
+srl                 YA
+srlv                YA
 sub                 YA            
 subu                YA
 lui                 

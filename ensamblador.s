@@ -32,7 +32,19 @@ msgBCodif: 	.asciiz "Codificando el siguinete programa:\n\n"
 #DIV/U- T.R.
 #programa:	.asciiz ".text\nmain:\naddi $t0 $0 6\naddi $t1 $0 3\ndivu $t0 $t1\nmfhi $a0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #MULT/U
-programa:	.asciiz ".text\nmain:\naddi $t0 $0 6\naddi $t1 $0 3\nmult $t0 $t1\nmflo $a0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#programa:	.asciiz ".text\nmain:\naddi $t0 $0 6\naddi $t1 $0 3\nmult $t0 $t1\nmflo $a0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#div_mult
+#programa:	.asciiz ".text\nmain:\nori $s0 $0 3\nori $s1 $0 4\nori $s3 $0 6\nmult $s0 $s1\nmflo $s7\ndiv $s7 $s3\nmflo $a0\nori $v0 $0 1\nsyscall\nmfhi $a0\nori $v0 $0 1\nsyscall\nmultu $s0 $s1\nmflo $s7\ndivu $s7 $s3\nmflo $a0\nori $v0 $0 1\nsyscall\nmfhi $a0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#SLL
+#programa:	.asciiz ".text\nmain:\naddi $t0 $0 5\nsll $a0 $t0 2\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#SLLV
+#programa:	.asciiz ".text\nmain:\naddi $t0 $0 4\nsllv $a0 $t0 $t0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#SRA
+#programa:	.asciiz ".text\nmain:\naddi $t0 $0 4\nsra $a0 $t0 1\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#SRL
+#programa:	.asciiz ".text\nmain:\naddi $t0 $0 4\nsrl $a0 $t0 1\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#SRLV
+programa:	.asciiz ".text\nmain:\naddi $t0 $0 1\naddi $t1 $0 9\nsrlv $a0 $t1 $t0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 
 ##### FIN DEL PROGRAMA A CODIFICAR #####
 
@@ -700,23 +712,122 @@ asm_or:
 ###########################################
 ######### asm_sll ##########################
 asm_sll:
-
+   li $s7 0
+   
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   add 	$s7 $s7 $v0	# almaceno el numero del registro rd
+   
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   sll 	$v0 $v0 5	# coloco rt en su posicion correcta
+   or 	$s7 $s7 $v0 	# agrego rt a la instruccion
+   
+   sll 	$s7 $s7 5	# dejo el espacio para colocar el shamt
+   addi	$s0 $s0 1	# elimino el espacio
+   jal ascii_to_int	# hago la conversion de ascii a int
+   addu $s7 $s7 $v0 	# concateno el shamt con el resto que ya tenia
+   sll 	$s7 $s7 6	# coloco todas las instrucciones donde deben de ir
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop
+   
 ###########################################
 ######### asm_sllv ##########################
 asm_sllv:
+   li	$s7 0
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   add 	$s7 $s7 $v0	# almaceno el numero del registro rd
+   
+   addi $s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	
+   sll 	$v0 $v0 5	# pongo rt en la posición que debe ir
+   or 	$s7 $s7 $v0	# almaceno rt
+   
+   addi $s0 $s0 1	#elimino el espacio
+   jal 	asm_regs
+   sll 	$v0 $v0 10	# pongo rs en la posicion que debe ir
+   or 	$s7 $s7 $v0	# almeceno rs
+   
+   sll 	$s7 $s7 11	# corro 11 espacios para guardar el código de función
+   addu	$s7 $s7 4	# sumo el codigo de funcion de sllv
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop
 
 ###########################################
 ######### asm_sra ##########################
 asm_sra:
+   li $s7 0
+   
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   add 	$s7 $s7 $v0	# almaceno el numero del registro rd
+   
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   sll 	$v0 $v0 5	# coloco rt en su posicion correcta
+   or 	$s7 $s7 $v0 	# agrego rt a la instruccion
+   
+   sll 	$s7 $s7 5	# dejo el espacio para colocar el shamt
+   addi	$s0 $s0 1	# elimino el espacio
+   jal ascii_to_int	# hago la conversion de ascii a int
+   addu $s7 $s7 $v0 	# concateno el shamt con el resto que ya tenia
+   sll 	$s7 $s7 6	# coloco todas las instrucciones donde deben de ir
+   addu $s7 $s7 3	# agrego el codigo de la funcion sra
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop
 
 ###########################################
 ######### asm_srl ##########################
 asm_srl:
+   li $s7 0
+   
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   add 	$s7 $s7 $v0	# almaceno el numero del registro rd
+   
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   sll 	$v0 $v0 5	# coloco rt en su posicion correcta
+   or 	$s7 $s7 $v0 	# agrego rt a la instruccion
+   
+   sll 	$s7 $s7 5	# dejo el espacio para colocar el shamt
+   addi	$s0 $s0 1	# elimino el espacio
+   jal ascii_to_int	# hago la conversion de ascii a int
+   addu $s7 $s7 $v0 	# concateno el shamt con el resto que ya tenia
+   sll 	$s7 $s7 6	# coloco todas las instrucciones donde deben de ir
+   addu $s7 $s7 2	# agrego el codigo de la funcion srl
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop
 
 ###########################################
 ######### asm_srlv ##########################
 asm_srlv:
-
+   li	$s7 0
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   add 	$s7 $s7 $v0	# almaceno el numero del registro rd
+   
+   addi $s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	
+   sll 	$v0 $v0 5	# pongo rt en la posición que debe ir
+   or 	$s7 $s7 $v0	# almaceno rt
+   
+   addi $s0 $s0 1	#elimino el espacio
+   jal 	asm_regs
+   sll 	$v0 $v0 10	# pongo rs en la posicion que debe ir
+   or 	$s7 $s7 $v0	# almeceno rs
+   
+   sll 	$s7 $s7 11	# corro 11 espacios para guardar el código de función
+   addu	$s7 $s7 6	# sumo el codigo de funcion de srlv
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop
+   
 ###########################################
 ######### asm_sub ##########################
 asm_sub:
