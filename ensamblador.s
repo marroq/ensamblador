@@ -44,7 +44,9 @@ msgBCodif: 	.asciiz "Codificando el siguinete programa:\n\n"
 #SRL
 #programa:	.asciiz ".text\nmain:\naddi $t0 $0 4\nsrl $a0 $t0 1\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #SRLV
-programa:	.asciiz ".text\nmain:\naddi $t0 $0 1\naddi $t1 $0 9\nsrlv $a0 $t1 $t0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#programa:	.asciiz ".text\nmain:\naddi $t0 $0 1\naddi $t1 $0 9\nsrlv $a0 $t1 $t0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#LUI
+programa:	.asciiz ".text\nmain:\nlui $a0 500\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 
 ##### FIN DEL PROGRAMA A CODIFICAR #####
 
@@ -879,6 +881,20 @@ asm_subu:
 ###########################################
 ######### asm_lui ##########################
 asm_lui:
+   li 	$s7 0xF		# cargo el codigo de la funcion 0xf
+   
+   addi	$s0 $s0 1	# elimino el espacio
+   sll 	$s7 $s7 10	# me corro 5 para dejar a rt en su posicion correcta (casi)
+   jal 	asm_regs	
+   add 	$s7 $s7 $v0	# agrego rt a la instruccion
+   
+   sll	$s7 $s7 16	# dejo todo en su lugar y preparo para el inmediato
+   addi	$s0 $s0 1	# elimino el espacio
+   jal ascii_to_int	# hago la conversion de ascii a int
+   addu $s7 $s7 $v0 	# concateno el imm con el resto que ya tenia
+   sw $s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop
 
 ###########################################
 ######### asm_slt ##########################

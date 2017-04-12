@@ -16,12 +16,12 @@ srl                 YA
 srlv                YA
 sub                 YA            
 subu                YA
-lui                 
+lui                 YA
 slt                 YA
 sltu                YA
 slti                YA
 sltiu               YA
-lw
+lw                  
 sw
 mfhi                YA
 mflo                YA
