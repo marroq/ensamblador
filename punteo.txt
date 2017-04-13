@@ -35,7 +35,7 @@ abs                 YA
 ror                 YA
 rol                 YA
 seq                 YA
-sne
+sne                 YA
 li
 la
 
