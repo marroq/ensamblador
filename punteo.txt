@@ -32,7 +32,7 @@ neg                 YA
 mul                 YA
 div                 
 abs                 YA
-ror
+ror                 YA
 rol
 seq
 sne
