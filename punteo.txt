@@ -33,7 +33,7 @@ mul                 YA
 div                 
 abs                 YA
 ror                 YA
-rol
+rol                 YA
 seq
 sne
 li

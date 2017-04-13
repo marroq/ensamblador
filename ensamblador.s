@@ -62,7 +62,9 @@ msgBCodif: 	.asciiz "Codificando el siguinete programa:\n\n"
 #ABS
 #programa: 	.asciiz ".text\nmain:\nori $t5 $0 9\nsub $a0 $0 $t5\nabs $a0 $t5\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #ROR
-programa:	.asciiz ".text\nmain:\nori $t0 $0 9\nori $t1 $0 2\nror $a0 $t0 $t1\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#programa:	.asciiz ".text\nmain:\nori $t0 $0 9\nori $t1 $0 2\nror $a0 $t0 $t1\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#ROL
+programa:	.asciiz ".text\nmain:\nori $t0 $0 9\nori $t1 $0 2\nrol $a0 $t0 $t1\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 		.align 2
 
 ##### FIN DEL PROGRAMA A CODIFICAR #####
@@ -1382,6 +1384,98 @@ asm_ror:
 ###########################################
 ######### asm_rol ##########################
 asm_rol:
+   addi $sp $sp -16
+   sw	$s6 0($sp)
+   sw	$s5 4($sp)
+   sw	$s4 8($sp)
+   sw	$s3 12($sp)
+
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   add 	$s6 $0 $v0	# almaceno rdest -> rd
+   
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   add 	$s5 $0 $v0	# almaceno rsrc1 -> rs
+   
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   add 	$s4 $0 $v0	# almaceno rsrc2 -> rt
+   
+   addi $s3 $0 1	# le pongo $at
+
+   #CODIFICACION SUBU
+   li	$s7 0   
+   add 	$s7 $s7 $s3	# almaceno el numero del registro rd -> $at
+   or 	$s7 $s7 $0	# almaceno rs -> lo pongo para saber que aqui solo va un 0
+   
+   sll 	$s4 $s4 5	# pongo rt en la posicion que debe ir
+   or 	$s7 $s7 $s4	# almeceno rt
+   
+   sll 	$s7 $s7 11	# corro 11 espacios para guardar el código de función
+   addi	$s7 $s7 35	# sumo el codigo de funcion de subu
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4      
+   
+   srl 	$s4 $s4 5	# regreso el cambio que le hice a $s4->rt sino despues es problema
+
+   #CODIFICACION SRLV
+   li	$s7 0
+   add 	$s7 $s7 $s3	# almaceno el numero del registro rd
+   
+   sll 	$s5 $s5 5	# pongo rt en la posición que debe ir
+   or 	$s7 $s7 $s5	# almaceno rt
+   
+   sll 	$s3 $s3 10	# pongo rs en la posicion que debe ir
+   or 	$s7 $s7 $s3	# almeceno rs
+   
+   sll 	$s7 $s7 11	# corro 11 espacios para guardar el código de función
+   addi	$s7 $s7 6	# sumo el codigo de funcion de srlv
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   
+   srl	$s3 $s3 10	# regreso los cambios hechos a $s3->$at
+   srl	$s5 $s5 5	# regreso los cambios hechos a $s4->rt
+   
+   #CODIFICACION SLLV
+   li	$s7 0
+   add 	$s7 $s7 $s6	# almaceno el numero del registro rd
+   
+   sll 	$s5 $s5 5	# pongo rt en la posición que debe ir
+   or 	$s7 $s7 $s5	# almaceno rt
+   
+   sll 	$s4 $s4 10	# pongo rs en la posicion que debe ir
+   or 	$s7 $s7 $s4	# almeceno rs
+   
+   sll 	$s7 $s7 11	# corro 11 espacios para guardar el código de función
+   addi	$s7 $s7 4	# sumo el codigo de funcion de sllv
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   
+   srl 	$s5 $s5 5	# regreso los cambios hechos a $s5->rs
+   srl 	$s4 $s4 10	# regreso los cambios hechos a $s4->rt
+   
+   #CODIFICACION OR   
+   li	$s7 0
+   add 	$s7 $s7 $s6	# almaceno el numero del registro rd
+   
+   sll 	$s6 $s6 10	# pongo rs en la posición que debe ir
+   or 	$s7 $s7 $s6	# almaceno rs
+   
+   sll 	$s3 $s3 5	# pongo rt en la posicion que debe ir
+   or 	$s7 $s7 $s3	# almeceno rt
+   
+   sll 	$s7 $s7 11	# corro 11 espacios para guardar el código de función
+   addi	$s7 $s7 37	# sumo el codigo de funcion de or
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+	
+   lw 	$s3 12($sp)
+   lw	$s4 8($sp)
+   lw	$s5 4($sp)
+   lw	$s6 0($sp)
+   addi $sp $sp 16
+   j asm_text_loop      
 
 ###########################################
 ######### asm_seq ##########################
