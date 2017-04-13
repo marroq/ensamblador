@@ -36,7 +36,7 @@ ror                 YA
 rol                 YA
 seq                 YA
 sne                 YA
-li
+li                  YA 
 la
 
 Saltos (6 puntos cada uno)
