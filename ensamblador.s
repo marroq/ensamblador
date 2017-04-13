@@ -70,7 +70,9 @@ msgBCodif: 	.asciiz "Codificando el siguinete programa:\n\n"
 #SNE
 #programa:	.asciiz ".text\nmain:\nori $t4 $0 33\nori $t3 $0 43\nsne $a0 $t4 $t3\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #LI
-programa:	.asciiz ".text\nmain:\nli $a0 9876\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#programa:	.asciiz ".text\nmain:\nli $a0 9876\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#LA
+#programa:	
 		.align 2
 
 ##### FIN DEL PROGRAMA A CODIFICAR #####
@@ -1629,10 +1631,31 @@ asm_li:
    sw $s7 0($s1)	# almaceno la instruccion codificada
    addi $s1 $s1 4
    j asm_text_loop
-
+   
+   
 ###########################################
-######### asm_la ##########################
+######### asm_la #########################
+
 asm_la:
+
+   li $s7 0x0d		# codigo de ori 0x0d
+
+   sll $s7 $s7 10	# shift porque son 5b de rt + 5b de rs
+   addi $s0 $s0 1	# elimino el espacio
+   jal asm_regs         # me devuelve el numero del registro
+   add $s7 $s7 $v0	# almaceno el numero del registro en r
+ 
+   sll $s7 $s7 16	# le hago shift de 16 para hacer espacio al imm
+   addi $s0 $s0 1	# elimino el espacio
+   jal ascii_to_int	# hago la conversion de ascii a int
+   addu $s7 $s7 $v0 	# concateno el imm con el resto que ya tenia
+   sw $s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop
+
+############################################
+
+
 
 ###########################################
 ############# asm_regs ####################
