@@ -29,9 +29,9 @@ mflo                YA
 Pseudoinstrucciones (11 puntos cada una)
 move                YA      
 neg                 YA
-mul
-div
-abs
+mul                 YA
+div                 
+abs                 YA
 ror
 rol
 seq

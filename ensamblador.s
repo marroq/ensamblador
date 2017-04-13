@@ -56,7 +56,11 @@ msgBCodif: 	.asciiz "Codificando el siguinete programa:\n\n"
 #MOVE
 #programa:	.asciiz ".text\nmain:\nori $t0 $0 25\nmove $a0 $t0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #NEG
-programa:	.asciiz ".text\nmain:\nori $t0 $0 15\nneg $a0 $t0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#programa:	.asciiz ".text\nmain:\nori $t0 $0 15\nneg $a0 $t0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#MUL
+#programa:	.asciiz ".text\nmain:\nori $t0 $0 5\nori $t1 $0 50\nmul $a0 $t0 $t1\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#ABS
+programa: 	.asciiz ".text\nmain:\nori $t0 $0 9\nsub $a0 $0 $t0\nabs $a0 $t0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 		.align 2
 
 ##### FIN DEL PROGRAMA A CODIFICAR #####
@@ -220,7 +224,7 @@ ensamblador:
    li   $s4 ' '	# s4 -> caracter espacio
    li   $s5 10  # s5 -> caracter "\n" -> EOL
    li   $s6 9   # s6 -> tabulador
-
+	
 # Inicio de la codificacion
 # Asumo que empieza en modo .text
 asm_text_loop:
@@ -385,6 +389,11 @@ asm_get_instruction:		# Basicamente, un gran switch que indica que instruccion e
    bne	$v0 $0 asm_divu
    
    move $a0 $s0
+   la 	$a1 str_mul		# verifico si es la instruccion mul
+   jal 	strcmp
+   bne	$v0 $0 asm_mul
+   
+   move $a0 $s0
    la 	$a1 str_mult		# verifico si es la instruccion mult
    jal 	strcmp
    bne	$v0 $0 asm_mult
@@ -493,11 +502,6 @@ asm_get_instruction:		# Basicamente, un gran switch que indica que instruccion e
    la 	$a1 str_neg		# verifico si es la instruccion neg
    jal 	strcmp
    bne	$v0 $0 asm_neg
-   
-   move $a0 $s0
-   la 	$a1 str_mul		# verifico si es la instruccion mul
-   jal 	strcmp
-   bne	$v0 $0 asm_mul
    
    move $a0 $s0
    la 	$a1 str_divM		# verifico si es la instruccion divMal
@@ -1183,9 +1187,32 @@ asm_neg:			# es un sub
    sw 	$s7 0($s1)	# almaceno la instruccion codificada
    addi $s1 $s1 4
    j asm_text_loop
+   
 ###########################################
 ######### asm_mul ##########################
 asm_mul:
+   li $s7 0x1c		# cargo opcode de mul
+   
+   sll 	$s7 $s7 15	# corro el codigo 15 posiciones, dejo espacio para rs,rt y rd
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   add 	$s7 $s7 $v0	# almaceno el numero del registro rd
+   
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   sll 	$v0 $v0 10	# corro rs a su posicion
+   or 	$s7 $s7 $v0	# almaceno rs
+   
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   sll 	$v0 $v0 5	# corro rt a su posicion
+   or 	$s7 $s7 $v0	# almaceno rt
+   
+   sll 	$s7 $s7 11	# dejo cada valor en su lugar
+   add 	$s7 $s7 2	# sumo el codigo de funcion
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop
 
 ###########################################
 ######### asm_divM ##########################
@@ -1194,6 +1221,65 @@ asm_divM:
 ###########################################
 ######### asm_abs ##########################
 asm_abs:
+   addi $sp $sp -12
+   sw $s6 0($sp)
+   sw $s5 4($sp)
+   sw $s4 8($sp)
+   
+   #CODIFICACION SRA
+   li $s7 0
+   li $s6 1		# le agrego $at
+   add	$s7 $s7 $s6	
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   add 	$s5 $0 $v0 	# guardo el registro rdest -> rd
+   
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   add 	$s4 $0 $v0 	# guardo el registro rsrc -> rt
+   
+   sll 	$s4 $s4 5	# coloco rt en su posicion correcta
+   or 	$s7 $s7 $s4 	# agrego rt a la instruccion
+   
+   sll 	$s7 $s7 5	# dejo el espacio para colocar el shamt
+   addi $s7 $s7 0x1f 	# concateno el 0x1f para el sra
+   sll 	$s7 $s7 6	# coloco todas las instrucciones donde deben de ir
+   addi $s7 $s7 3	# agrego el codigo de la funcion sra
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   
+   #CODIFICACION XOR
+   li	$s7 0
+   add 	$s7 $s7 $s5	# almaceno el numero del registro rd
+   
+   sll 	$s6 $s6 10	# pongo rs en la posición que debe ir
+   or 	$s7 $s7 $s6	# almaceno rs
+   or 	$s7 $s7 $s4	# almeceno rt
+   
+   sll 	$s7 $s7 11	# corro 11 espacios para guardar el código de función
+   addi	$s7 $s7 38	# sumo el codigo de funcion de xor
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4   
+   
+   #CODIFICACION SUBU
+   li	$s7 0
+   add 	$s7 $s7 $s5	# almaceno el numero del registro rd
+   
+   sll 	$s5 $s5 10	# pongo rs en la posición que debe ir
+   or 	$s7 $s7 $s5	# almaceno rs
+   srl 	$s6 $s6 5	# pongo rt en la posicion que debe ir
+   or 	$s7 $s7 $s6	# almeceno rt
+   
+   sll 	$s7 $s7 11	# corro 11 espacios para guardar el código de función
+   addi	$s7 $s7 35	# sumo el codigo de funcion de subu
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   
+   lw $s4 8($sp)
+   lw $s5 4($sp)
+   lw $s6 0($sp)
+   addi $sp $sp 12
+   j asm_text_loop   
 
 ###########################################
 ######### asm_ror ##########################
