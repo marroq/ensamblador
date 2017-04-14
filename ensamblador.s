@@ -30,7 +30,7 @@ msgBCodif: 	.asciiz "Codificando el siguinete programa:\n\n"
 #SLT
 #programa:	.asciiz ".text\nmain:\nslt $a0 $0 $0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #DIV/U- T.R.
-#programa:	.asciiz ".text\nmain:\naddi $t0 $0 6\naddi $t1 $0 3\ndivu $t0 $t1\nmfhi $a0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#programa:	.asciiz ".text\nmain:\naddi $t0 $0 6\naddi $t1 $0 3\ndiv $t0 $t1\nmflo $a0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #MULT/U
 #programa:	.asciiz ".text\nmain:\naddi $t0 $0 6\naddi $t1 $0 3\nmult $t0 $t1\nmflo $a0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #div_mult_testcase
@@ -195,8 +195,6 @@ str_move:	.asciiz "move"
 str_neg:		.asciiz "neg"
 		.align 2
 str_mul:		.asciiz "mul"
-		.align 2
-str_divM:		.asciiz "div"
 		.align 2
 str_abs:		.asciiz "abs"
 		.align 2
@@ -393,14 +391,9 @@ asm_get_instruction:		# Basicamente, un gran switch que indica que instruccion e
    bne	$v0 $0 asm_andi
    
    move $a0 $s0
-   la 	$a1 str_divM		# verifico si es la instruccion divMal
+   la 	$a1 str_div		# verifico si es la instruccion div
    jal 	strcmp
-   bne	$v0 $0 asm_divM
-   
-   #move $a0 $s0
-   #la 	$a1 str_div		# verifico si es la instruccion div
-   #jal 	strcmp
-   #bne	$v0 $0 asm_div
+   bne	$v0 $0 verify_div	# ire a ver si es el div TAL o el div MAL
    
    move $a0 $s0
    la 	$a1 str_divu		# verifico si es la instruccion divu
@@ -742,6 +735,17 @@ asm_andi:
    sw $s7 0($s1)	# almaceno la instruccion codificada
    addi $s1 $s1 4
    j asm_text_loop
+
+###########################################
+######### verificacion div MAL o TAL##############
+verify_div:
+   move $t0 $s0
+   addi $t0 $t0 9
+   
+   lb 	$t1 0($t0)
+   li	$t2 '$'
+   bne	$t1 $t2 asm_div
+   j	asm_divM
    
 ###########################################
 ######### asm_div ##########################
