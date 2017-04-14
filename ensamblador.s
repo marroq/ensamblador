@@ -71,8 +71,8 @@ msgBCodif: 	.asciiz "Codificando el siguinete programa:\n\n"
 #programa:	.asciiz ".text\nmain:\nori $t4 $0 33\nori $t3 $0 43\nsne $a0 $t4 $t3\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #LI
 #programa:	.asciiz ".text\nmain:\nli $a0 9876\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
-#LA
-#programa:	
+#LW
+programa:	.asciiz ".text\nmain:\nlui $s0 65535\nori $s0 $s0 65535\nsw $s0 0($sp)\nlw $a0 0($sp)\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 		.align 2
 
 ##### FIN DEL PROGRAMA A CODIFICAR #####
@@ -420,6 +420,17 @@ asm_get_instruction:		# Basicamente, un gran switch que indica que instruccion e
    jal 	strcmp
    bne	$v0 $0 asm_or
    
+   move $a0 $s0
+   la 	$a1 str_lw		# verifico si es la instruccion lw
+   jal 	strcmp
+   bne	$v0 $0 asm_lw
+   
+   move $a0 $s0
+   la 	$a1 str_sw		# verifico si es la instruccion sw
+   jal 	strcmp
+   bne	$v0 $0 asm_sw
+
+   
    move $a0 $s0			# verifico si es la instruccion ori
    la $a1 str_ori
    jal strcmp
@@ -484,17 +495,7 @@ asm_get_instruction:		# Basicamente, un gran switch que indica que instruccion e
    la 	$a1 str_sltiu		# verifico si es la instruccion sltiu
    jal 	strcmp
    bne	$v0 $0 asm_sltiu
-   
-   move $a0 $s0
-   la 	$a1 str_lw		# verifico si es la instruccion lw
-   jal 	strcmp
-   bne	$v0 $0 asm_lw
-   
-   move $a0 $s0
-   la 	$a1 str_sw		# verifico si es la instruccion sw
-   jal 	strcmp
-   bne	$v0 $0 asm_sw
-   
+      
    move $a0 $s0
    la 	$a1 str_mfhi		# verifico si es la instruccion mfhi
    jal 	strcmp
@@ -1127,11 +1128,49 @@ asm_sltiu:
 ###########################################
 ######### asm_lw ##########################
 asm_lw:
-
+   li 	$s7 0x23	# cargo el codigo de la funcion lw
+   
+   addi	$s0 $s0 1	# elimino el espacio
+   sll 	$s7 $s7 10	# me corro 5 para dejar a rt en su posicion correcta (casi)
+   jal 	asm_regs	
+   add 	$s7 $s7 $v0	# agrego rt a la instruccion
+   
+   sll	$s7 $s7 16	# dejo todo en su lugar y preparo para el offset
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	ascii_to_int	# hago la conversion de ascii a int
+   addu $s7 $s7 $v0 	# concateno el offset con el resto que ya tenia
+   addi $s0 $s0 1	# elimino el primer parentesis
+   jal	asm_regs	# voy por el registro
+   sll	$v0 $v0 21	# dejo el rs donde debe de ir
+   or	$s7 $s7 $v0	# pongo rs en la instruccion
+   addi $s0 $s0 2	# elimino el segundo parentesis
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop   
+   
 ###########################################
 ######### asm_sw ##########################
 asm_sw:
-
+   li 	$s7 0x2b	# cargo el codigo de la funcion sw
+   
+   addi	$s0 $s0 1	# elimino el espacio
+   sll 	$s7 $s7 10	# me corro 5 para dejar a rt en su posicion correcta (casi)
+   jal 	asm_regs	
+   add 	$s7 $s7 $v0	# agrego rt a la instruccion
+   
+   sll	$s7 $s7 16	# dejo todo en su lugar y preparo para el offset
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	ascii_to_int	# hago la conversion de ascii a int
+   addu $s7 $s7 $v0 	# concateno el offset con el resto que ya tenia
+   addi $s0 $s0 1	# elimino el primer parentesis
+   jal	asm_regs	# voy por el registro
+   sll	$v0 $v0 21	# dejo el rs donde debe de ir
+   or	$s7 $s7 $v0	# pongo rs en la instruccion
+   addi $s0 $s0 2	# elimino el segundo parentesis
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop   
+   
 ###########################################
 ######### asm_mfhi ##########################
 asm_mfhi:
