@@ -420,17 +420,6 @@ asm_get_instruction:		# Basicamente, un gran switch que indica que instruccion e
    jal 	strcmp
    bne	$v0 $0 asm_or
    
-   move $a0 $s0
-   la 	$a1 str_lw		# verifico si es la instruccion lw
-   jal 	strcmp
-   bne	$v0 $0 asm_lw
-   
-   move $a0 $s0
-   la 	$a1 str_sw		# verifico si es la instruccion sw
-   jal 	strcmp
-   bne	$v0 $0 asm_sw
-
-   
    move $a0 $s0			# verifico si es la instruccion ori
    la $a1 str_ori
    jal strcmp
@@ -495,6 +484,17 @@ asm_get_instruction:		# Basicamente, un gran switch que indica que instruccion e
    la 	$a1 str_sltiu		# verifico si es la instruccion sltiu
    jal 	strcmp
    bne	$v0 $0 asm_sltiu
+   
+   move $a0 $s0
+   la 	$a1 str_lw		# verifico si es la instruccion lw
+   jal 	strcmp
+   bne	$v0 $0 asm_lw
+   
+   move $a0 $s0
+   la 	$a1 str_sw		# verifico si es la instruccion sw
+   jal 	strcmp
+   bne	$v0 $0 asm_sw
+
       
    move $a0 $s0
    la 	$a1 str_mfhi		# verifico si es la instruccion mfhi
