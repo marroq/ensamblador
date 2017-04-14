@@ -72,7 +72,9 @@ msgBCodif: 	.asciiz "Codificando el siguinete programa:\n\n"
 #LI
 #programa:	.asciiz ".text\nmain:\nli $a0 9876\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #LW
-programa:	.asciiz ".text\nmain:\nlui $s0 65535\nori $s0 $s0 65535\nsw $s0 0($sp)\nlw $a0 0($sp)\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#programa:	.asciiz ".text\nmain:\nlui $s0 65535\nori $s0 $s0 65535\nsw $s0 0($sp)\nlw $a0 0($sp)\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#DIVM
+programa:	.asciiz ".text\nmain:\nori $t0 $0 18\nori $t1 $0 6\ndiv $a0 $t0 $t1\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 		.align 2
 
 ##### FIN DEL PROGRAMA A CODIFICAR #####
@@ -391,9 +393,14 @@ asm_get_instruction:		# Basicamente, un gran switch que indica que instruccion e
    bne	$v0 $0 asm_andi
    
    move $a0 $s0
-   la 	$a1 str_div		# verifico si es la instruccion div
+   la 	$a1 str_divM		# verifico si es la instruccion divMal
    jal 	strcmp
-   bne	$v0 $0 asm_div
+   bne	$v0 $0 asm_divM
+   
+   #move $a0 $s0
+   #la 	$a1 str_div		# verifico si es la instruccion div
+   #jal 	strcmp
+   #bne	$v0 $0 asm_div
    
    move $a0 $s0
    la 	$a1 str_divu		# verifico si es la instruccion divu
@@ -494,7 +501,6 @@ asm_get_instruction:		# Basicamente, un gran switch que indica que instruccion e
    la 	$a1 str_sw		# verifico si es la instruccion sw
    jal 	strcmp
    bne	$v0 $0 asm_sw
-
       
    move $a0 $s0
    la 	$a1 str_mfhi		# verifico si es la instruccion mfhi
@@ -515,11 +521,6 @@ asm_get_instruction:		# Basicamente, un gran switch que indica que instruccion e
    la 	$a1 str_neg		# verifico si es la instruccion neg
    jal 	strcmp
    bne	$v0 $0 asm_neg
-   
-   move $a0 $s0
-   la 	$a1 str_divM		# verifico si es la instruccion divMal
-   jal 	strcmp
-   bne	$v0 $0 asm_divM
    
    move $a0 $s0
    la 	$a1 str_abs		# verifico si es la instruccion abs
@@ -1268,6 +1269,69 @@ asm_mul:
 ###########################################
 ######### asm_divM ##########################
 asm_divM:
+   addi $sp $sp -12
+   sw	$s6 0($sp)
+   sw	$s5 4($sp)
+   sw	$s4 8($sp)
+   
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   add 	$s6 $0 $v0	# almaceno rdest -> rd
+   
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   add 	$s5 $0 $v0	# almaceno rsrc1 -> rs
+   
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   add 	$s4 $0 $v0	# almaceno rsrc2 -> rt
+	
+   # CODIFICACION BNE
+   li 	$s7 0x05		# codigo de bne 0x05
+
+   sll 	$s7 $s7 10	# shift porque son 5b de rt + 5b de rs
+   sll 	$s4 $s4 5
+   or  	$s7 $s7 $s4	# almaceno rs -> rt en div PD: rt = 0
+ 
+   sll 	$s7 $s7 16	# le hago shift de 16 para hacer espacio al offset
+   addi $s7 $s7 1 	# el offset es 1 fijo
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   
+   srl 	$s4 $s4 5	# regreso los cambios hechos a $s4 -> rt
+   
+   # CODIFICACION BREAK
+   li 	$s7 0xd		# codigo break
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   
+   # CODIFICACION DIV
+   li $s7 0
+   
+   add 	$s7 $s7 $s5	# almaceno el numero del registro rs
+   sll 	$s7 $s7 5	# corro rs 5 espacios
+   add  $s7 $s7 $s4	# almaceno rt 
+   
+   sll 	$s7 $s7 16	# pongo a rs y rt en sus posiciones
+   addi $s7 $s7 26	# almaceno el codigo de la funcion
+   sw $s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4  
+   
+   # CODIFICACION MFLO
+   li $s7 0
+   
+   sll 	$s6 $s6 11	# hago un corrimiento de 11 posiciones en el valor del registro
+   or 	$s7 $s7 $s6	# coloco el registro en su posicion
+   
+   addi $s7 $s7 18	# sumo el codigo de mflo
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4                           
+   
+   lw	$s4 8($sp)
+   lw	$s5 4($sp)
+   lw	$s6 0($sp)
+   addi $sp $sp 12
+   j asm_text_loop      
 
 ###########################################
 ######### asm_abs ##########################

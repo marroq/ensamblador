@@ -30,7 +30,7 @@ Pseudoinstrucciones (11 puntos cada una)
 move                YA      
 neg                 YA
 mul                 YA
-div                 
+div                 YA
 abs                 YA
 ror                 YA
 rol                 YA
@@ -40,7 +40,7 @@ li                  YA
 la                  
 
 Saltos (6 puntos cada uno)
-j
+j                   
 jr
 jal
 beq
