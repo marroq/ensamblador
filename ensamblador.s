@@ -73,8 +73,10 @@ msgBCodif: 	.asciiz "Codificando el siguinete programa:\n\n"
 #programa:	.asciiz ".text\nmain:\nli $a0 9876\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #LW
 #programa:	.asciiz ".text\nmain:\nlui $s0 65535\nori $s0 $s0 65535\nsw $s0 0($sp)\nlw $a0 0($sp)\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
-#DIVM
-programa:	.asciiz ".text\nmain:\nori $t0 $0 18\nori $t1 $0 6\ndiv $a0 $t0 $t1\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#J
+programa:	.asciiz ".text\nmain:\nori $t0 $0 18\nori $t1 $0 6\nlala:\ndiv $a0 $t0 $t1\nj lala\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#pseudo aritmeticas-testcases
+#programa:	.asciiz ".text\nmain:\nli $a0 15\nneg $a0 $a0\nori $v0 $0 1\nsyscall\nabs $a0 $a0\nori $v0 $0 1\nsyscall\nori $s7 $0 3\nmove $a0 $s7\nori $v0 $0 1\nsyscall\nori $s0 $0 3\nori $s1 $0 4\nori $s3 $0 6\nmul $s7 $s0 $s1\ndiv $a0 $s7 $s3\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 		.align 2
 
 ##### FIN DEL PROGRAMA A CODIFICAR #####
@@ -210,6 +212,8 @@ str_li:		.asciiz "li"
 		.align 2
 str_la:		.asciiz "la"
 		.align 2								
+str_j:		.asciiz "j"
+		.align 2
 
 .text
 ###################################################
@@ -292,11 +296,11 @@ nextPosition:
    bgt  $t3 $0 nextPosition
    move	$t0 $t4
 nextChar:
-   lb 	$t3 0($a0)		# cargo letra por letra de lo que venga en $a0
+   lb 	$t3 0($s0)		# cargo letra por letra de lo que venga en $a0
    beq 	$t3 $t1 saveAddress	# si encuentro " : " es porque ya terminé
    beq	$t3 $0 saveAddress	# si es un 0 = salto de línea \0, es porque ya terminé
    sb	$t3 tabla($t0)		# escribo letra por letra en mi espacio reservado llamado -tabla-
-   addi	$a0 $a0 1		# avanzo al siguiente caracter del label
+   addi	$s0 $s0 1		# avanzo al siguiente caracter del label
    addi $t0 $t0 1		# incremente el contrador de labels
    j nextChar
 saveAddress:
@@ -304,39 +308,45 @@ saveAddress:
    addi $t0 $t0 1		
    sb   $t6 tabla($t0)		# escribo el terminador de línea
    add	$t5 $t4 20		# para escribir la dirección del label
-   sw 	$a1 tabla($t5)
+   sw 	$a1 tabla($t5)		# guardo la direccion del label
+   addi	$s0 $s0 1		# quito los " : "
    jr	$ra
 
 ###########################################
 ###### Obtener de la tabla de simbolos ############
 obtenerTabla:	
-   addi $sp $sp -8
+   addi $sp $sp -12
    sw	$ra 0($sp)
-   sw	$s0 4($sp)
-   li 	$s0 0			# contador de labels	
-   li	$t2 24			# cada label ocupa 24 bytes
-   mult $s0 $t2
+   sw	$s6 4($sp)
+   sw	$s5 8($sp)
+   li 	$s6 0			# contador de labels	
+   li	$s5 24			# cada label ocupa 24 bytes
+   mult $s6 $s5
 nextLabel:
    mflo $t4
    la 	$a1 tabla($t4)		# cargo la dirección del label   
    lb	$t9 0($a1)		# veo que tiene el primer caracter de la dirección cargada, esto para ver si no está vacío, entonces ya no hay más datos en la tabla
    beq 	$t9 $0 notExist
-   addi $s0 $s0 1
-   mult	$s0 $t2
+   addi $s6 $s6 1
+   mult	$s6 $s5
    jal	strcmp			
    beq	$v0 1 exitObtener
    beq 	$v0 0 nextLabel
 exitObtener:
-   addi $t1 $s0 20		# me voy al área donde está la dirección del label
-   la 	$v0 tabla($t1) 		# cargo la dirección del label solicitado
-   lw 	$s0 4($sp)
+   mult $s5 $s6			# ubicacion del siguiente label
+   mflo $t1
+   subi $t1 $t1 4		# le resto 4 para llegar a la direccion
+   lw 	$v0 tabla($t1) 		# cargo la dirección del label solicitado
+   lw	$s5 8($sp)
+   lw 	$s6 4($sp)
    lw	$ra 0($sp)		
-   addi $sp $sp 8
+   addi $sp $sp 12
    jr	$ra
 notExist:
-   lw 	$s0 4($sp)
+   lw	$s5 8($sp)
+   lw 	$s6 4($sp)
    lw	$ra 0($sp)		
-   addi $sp $sp 8
+   addi $sp $sp 12
    li	$v0 -1
    jr	$ra
    
@@ -550,6 +560,11 @@ asm_get_instruction:		# Basicamente, un gran switch que indica que instruccion e
    jal 	strcmp
    bne	$v0 $0 asm_la
    
+   move $a0 $s0
+   la 	$a1 str_j		# verifico si es la instruccion j
+   jal 	strcmp
+   bne	$v0 $0 asm_j  
+   
    move $a0 $s0			# verifico si es un label
    jal asm_label_check
    bne $v0 $0 asm_label
@@ -559,10 +574,18 @@ asm_get_instruction:		# Basicamente, un gran switch que indica que instruccion e
 ###########################################
 ######### asm_label #######################
 asm_label:			# codigo a ejecutarse en caso que sea un label
-   lb $t0 0($s0)		# la tabla de simbolos se debe llenar con las etiquetas
-   addi $s0 $s0 1
-   bne $t0 $s5 asm_label
-   j asm_text_loop
+#   lb $t0 0($s0)		# la tabla de simbolos se debe llenar con las etiquetas
+#   addi $s0 $s0 1
+#   bne $t0 $s5 asm_label
+   addi $sp $sp -4
+   sw	$ra 0($sp)
+
+   move	$a1 $s1		# argumento donde va la direccion del label
+   jal 	guardarTabla	# guardar en la tabla de símbolos
+   
+   lw 	$ra 0($sp)
+   addi $sp $sp 4
+   j 	asm_text_loop	
 
 ###########################################
 ######### asm_syscall #####################
@@ -1739,31 +1762,35 @@ asm_li:
    addi $s1 $s1 4
    j asm_text_loop
    
-   
 ###########################################
-######### asm_la #########################
-
+######### asm_la ############################
 asm_la:
 
-   li $s7 0x0d		# codigo de ori 0x0d
-
-   sll $s7 $s7 10	# shift porque son 5b de rt + 5b de rs
+###########################################
+######### asm_j ############################
+asm_j:
+   addi $sp $sp -4 
+   sw 	$ra 0($sp)
+   
+   li 	$s7 0x02	# codigo de j
    addi $s0 $s0 1	# elimino el espacio
-   jal asm_regs         # me devuelve el numero del registro
-   add $s7 $s7 $v0	# almaceno el numero del registro en r
- 
-   sll $s7 $s7 16	# le hago shift de 16 para hacer espacio al imm
-   addi $s0 $s0 1	# elimino el espacio
-   jal ascii_to_int	# hago la conversion de ascii a int
-   addu $s7 $s7 $v0 	# concateno el imm con el resto que ya tenia
-   sw $s7 0($s1)	# almaceno la instruccion codificada
+   sll	$s7 $s7 26	# dejo el codigo en el lugar que debe i
+   move	$a0 $s0		# envio la cadena que quiero buscar
+   jal 	obtenerTabla
+   add 	$s7 $s7 $v0	# concateno la direccion de la etiqueta
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
    addi $s1 $s1 4
+   
+   li	$t1 10		# salto de linea
+suprLabel:
+   lb 	$t0 0($s0)	# cargo el caracter del label
+   addi $s0 $s0 1	# avanzo al siguiente caracter
+   bne 	$t0 $t1 suprLabel
+      
+   lw	$ra 0($sp)
+   addi $sp $sp 4
    j asm_text_loop
-
-############################################
-
-
-
+   
 ###########################################
 ############# asm_regs ####################
 asm_regs:		# pasa de $xN -> N ej. $s0 -> 16
@@ -1941,7 +1968,7 @@ asm_label_loop:
    j asm_label_loop
 
 asm_label_true:
-   move $s0 $a0
+#   move $s0 $a0
    li $v0 1
    jr $ra
 

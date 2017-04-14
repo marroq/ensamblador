@@ -27,7 +27,7 @@ mfhi                YA
 mflo                YA
 
 Pseudoinstrucciones (11 puntos cada una)
-move                YA      
+move                YA
 neg                 YA
 mul                 YA
 div                 YA
