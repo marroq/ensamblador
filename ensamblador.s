@@ -74,9 +74,11 @@ msgBCodif: 	.asciiz "Codificando el siguinete programa:\n\n"
 #LW
 #programa:	.asciiz ".text\nmain:\nlui $s0 65535\nori $s0 $s0 65535\nsw $s0 0($sp)\nlw $a0 0($sp)\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #J
-programa:	.asciiz ".text\nmain:\nori $t0 $0 18\nori $t1 $0 6\nlala:\ndiv $a0 $t0 $t1\nj lala\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#programa:	.asciiz ".text\nmain:\nori $t0 $0 18\nori $t1 $0 6\nlala:\ndiv $a0 $t0 $t1\nj lala\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #pseudo aritmeticas-testcases
 #programa:	.asciiz ".text\nmain:\nli $a0 15\nneg $a0 $a0\nori $v0 $0 1\nsyscall\nabs $a0 $a0\nori $v0 $0 1\nsyscall\nori $s7 $0 3\nmove $a0 $s7\nori $v0 $0 1\nsyscall\nori $s0 $0 3\nori $s1 $0 4\nori $s3 $0 6\nmul $s7 $s0 $s1\ndiv $a0 $s7 $s3\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#.DATA
+programa:	.asciiz ".data\nhi:\n.asciiz \"Hola Mundo!!!\n\"\nbye:\n.asciiz \"Adios mundo cruel... :'( *snif*\"\n.text\nmain:\nla $a0 hi\nli $v0 4\nsyscall\nla $a0 bye\nli $v0 4\nsyscall\nli $v0 10\nsyscall"
 		.align 2
 
 ##### FIN DEL PROGRAMA A CODIFICAR #####
@@ -214,6 +216,8 @@ str_la:		.asciiz "la"
 		.align 2								
 str_j:		.asciiz "j"
 		.align 2
+str_asciiz:	.asciiz ".asciiz"
+		.align 2
 
 .text
 ###################################################
@@ -252,8 +256,67 @@ asm_text_loop:
    beq $t0 $s6 asm_text_loop	# y tabuladores
    j asm_get_instruction
 
-asm_data_loop:			# Implemente esta parte
-   j asm_exit
+asm_data_loop:			
+   addi $sp $sp -16
+   sw	$s4 0($sp)
+   sw	$s5 4($sp)
+   sw 	$s6 8($sp)
+   sw	$s3 12($sp)
+   
+   li   $s4 ' '	# s4 -> caracter espacio
+   li   $s5 10  # s5 -> caracter "\n" -> EOL
+   li   $s6 9   # s6 -> tabulador
+nextDataChar:
+   lb  	$s3 0($s0)		# cargo letra por letra de lo que venga en $a0
+   addi	$s0 $s0 1		# avanzo al siguiente caracter del label
+   beq 	$s3 $s4 nextDataChar	# Ignorar espacios en blanco
+   beq 	$s3 $s5 nextDataChar	# lineas en blanco
+   beq 	$s3 $s6 nextDataChar	# y tabuladores
+   
+   addi $s0 $s0 -1		# Ya se habia sumado un 1 antes de llegar aqui
+   move $a0 $s0
+   la	$a1 str_text
+   jal 	strcmpData		# voy a ver si ya llegue al area de texto
+   bne  $v0 $0 exitData
+   li	$t1 ':'			# terminador de labels
+   addi $s0 $s0 1		# regreso el que sume antes de irme a strcmpData
+nextDChar:   
+   sb	$s3 0($s2)		# escribo letra por letra en mi espacio reservado llamado -data-
+   lb   $s3 0($s0)		# cargo letra por letra de lo que venga en $s0
+   addi	$s0 $s0 1		# avanzo al siguiente caracter del label
+   beq 	$s3 $t1 viewAsciiz	# si encuentro " : " es porque ya terminé
+   addi $s2 $s2 1		# incremente el contrador de posiciones de labels
+   j nextDChar
+   
+viewAsciiz:
+   addi $s0 $s0 1		# avanzo el salto de linea
+   move $a0 $s0			# verifico si es la directiva .asciiz
+   la 	$a1 str_asciiz
+   jal 	strcmp
+   bne 	$v0 $0 continueText
+   j 	asm_text_loop
+continueText:
+   li 	$t0 '"'			# iniciador y terminador de texto
+   addi $s2 $s2 1		# avanzo a la siguiente posicion en data
+searchComillas:
+   lb	$t2 0($s0)		# cargo caracter
+   addi $s0 $s0 1		# paso al siguiente caracter
+   beq 	$t2 $t0 saveText	# si encuetro la comilla empiezo a guardar texto
+   j searchComillas
+saveText:
+   lb	$t2 0($s0)		# cargo caracter
+   addi $s0 $s0 1		# avanzo al siguiente caracter
+   beq	$t2 $t0 nextDataChar	# termine de cargar el dato
+   sb	$t2 0($s2)		# escribo letra por letra en mi espacio reservado llamado -data-
+   addi $s2 $s2 1		# avanzo a la siguiente posicion de data
+   j 	saveText
+exitData:   
+   lw	$s3 12($sp)
+   lw 	$s6 8($sp)
+   lw	$s5 4($sp)
+   lw	$s4 0($sp)
+   addi $sp $sp 16
+   j asm_text_loop
 
 asm_error:			# Manejo generico de errores
    la $a0 errMsg		# En caso de cualquier problema, imprimimos error y terminamos la ejecucion
@@ -291,8 +354,8 @@ guardarTabla:
 nextPosition:
    mflo	$t4 			# guardo el resultado de que label llevo, es decir, voy de 24 en 24
    lb 	$t3 tabla($t4)		# cargo el byte de la primera/siguiente posicion de la tabla de símbolos
-   addi $t0 $t0 1
-   mult	$t0 $t2
+   addi $t0 $t0 1		
+   mult	$t0 $t2			# aqui me paso a la siguiente label si el siguiente branch ocurre
    bgt  $t3 $0 nextPosition
    move	$t0 $t4
 nextChar:
@@ -301,7 +364,7 @@ nextChar:
    beq	$t3 $0 saveAddress	# si es un 0 = salto de línea \0, es porque ya terminé
    sb	$t3 tabla($t0)		# escribo letra por letra en mi espacio reservado llamado -tabla-
    addi	$s0 $s0 1		# avanzo al siguiente caracter del label
-   addi $t0 $t0 1		# incremente el contrador de labels
+   addi $t0 $t0 1		# incremente el contrador de posiciones de labels
    j nextChar
 saveAddress:
    li 	$t6 '\0'		
@@ -314,7 +377,7 @@ saveAddress:
 
 ###########################################
 ###### Obtener de la tabla de simbolos ############
-obtenerTabla:	
+obtenerTabla:
    addi $sp $sp -12
    sw	$ra 0($sp)
    sw	$s6 4($sp)
@@ -1948,6 +2011,32 @@ strcmp_true:
    jr $ra
 
 strcmp_false:
+   li $v0 0
+   jr $ra
+   
+###########################################
+######### strcmpData ########################
+##########################################
+strcmpData:			# Compara 2 cadenas de caracteres
+   li $t2 ' '		
+   li $t3 10
+
+strcmp_loopData:
+   lb $t0 0($a0)
+   lb $t1 0($a1)
+   beq $t0 $t2 strcmp_trueData	# Un par de caracteres que no son letras
+   beq $t0 $t3 strcmp_trueData
+   beq $t0 $0  strcmp_trueData	# Fin de cadena
+   bne $t0 $t1 strcmp_falseData	# Es diferente
+   addi $a0 $a0 1
+   addi $a1 $a1 1
+   j strcmp_loopData
+   
+strcmp_trueData:
+   li $v0 1
+   jr $ra
+
+strcmp_falseData:
    li $v0 0
    jr $ra
 

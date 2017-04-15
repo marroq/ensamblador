@@ -37,7 +37,7 @@ rol                 YA
 seq                 YA
 sne                 YA
 li                  YA 
-la                  
+la                                    
 
 Saltos (6 puntos cada uno)
 j                   
@@ -50,4 +50,4 @@ bgt
 blt
 
 Directivas (15 puntos)
-.asciiz
+.asciiz             YA CASI
