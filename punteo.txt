@@ -50,4 +50,4 @@ bgt
 blt
 
 Directivas (15 puntos)
-.asciiz             YA CASI
+.asciiz             YA

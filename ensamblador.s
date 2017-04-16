@@ -256,6 +256,8 @@ asm_text_loop:
    beq $t0 $s6 asm_text_loop	# y tabuladores
    j asm_get_instruction
 
+#####################################
+###### Guardar area de data ##############
 asm_data_loop:			
    addi $sp $sp -16
    sw	$s4 0($sp)
@@ -289,6 +291,8 @@ nextDChar:
    j nextDChar
    
 viewAsciiz:
+   addi $s2 $s2 1		# avanzo data a su siguiente posicion
+   sb	$s3 0($s2)		# escribo los :
    addi $s0 $s0 1		# avanzo el salto de linea
    move $a0 $s0			# verifico si es la directiva .asciiz
    la 	$a1 str_asciiz
@@ -317,7 +321,40 @@ exitData:
    lw	$s4 0($sp)
    addi $sp $sp 16
    j asm_text_loop
+   
+#####################################
+###### Obtener del area de data ###########
+asm_get_data:
+   addi $sp $sp -8
+   sw	$ra 0($sp)
+   sw	$s3 4($sp)
 
+   li 	$s3 0			# contador de cuanto me muevo en data
+   move $a0 $s0			# muevo el codigo a $a0
+   la	$a1 0($a2)		# cargo la direccion de la posicion inicial de data
+   jal	strcmpDataObtener	# miro si esta el label
+   add  $s3 $s3 $v1
+   beq 	$v0 1 validate
+   addi $a2 $a2 1		# avanzo al siguiente caracter
+   addi $s3 $s3 1		# incremento contador de moviemiento en data
+   j asm_get_data
+validate:
+   li 	$t0 ':'
+   lb	$t1 0($a2)		# cargo lo que espero sean los ":"
+   beq 	$t1 $t0	returnAddress	
+   j asm_get_data
+returnAddress:
+   addi $a2 $a2 1		# avanzo al inicio del texto
+   addi $s3 $s3 1		# incremento contador de moviemiento en data
+   la 	$v0 0($a2)
+   sub  $a2 $a2 $s3		# regreso a la posicion inicial de data
+   
+   lw	$s3 4($sp)
+   lw	$ra 0($sp)
+   jr   $ra
+
+#####################################
+############ Mensaje de error ###########
 asm_error:			# Manejo generico de errores
    la $a0 errMsg		# En caso de cualquier problema, imprimimos error y terminamos la ejecucion
    jal print_str
@@ -389,7 +426,7 @@ nextLabel:
    mflo $t4
    la 	$a1 tabla($t4)		# cargo la dirección del label   
    lb	$t9 0($a1)		# veo que tiene el primer caracter de la dirección cargada, esto para ver si no está vacío, entonces ya no hay más datos en la tabla
-   beq 	$t9 $0 notExist
+   beq 	$t9 $0 notExist		# llegue al final de la tabla
    addi $s6 $s6 1
    mult	$s6 $s5
    jal	strcmp			
@@ -1828,6 +1865,19 @@ asm_li:
 ###########################################
 ######### asm_la ############################
 asm_la:
+   addi	$sp $sp -4
+   sw	$ra 0($sp)
+   
+   addi	$s0 $s0 1	# elimino el espacio
+   jal 	asm_regs	# me devuelve el numero del registro
+   add 	$s6 $0 $v0	# almaceno rdest -> rd
+   addi	$s0 $s0 1	# elimino el espacio   
+   
+   jal asm_get_data
+   
+   
+   lw 	$ra 0($sp)
+   addi $sp $sp 4
 
 ###########################################
 ######### asm_j ############################
@@ -2037,6 +2087,36 @@ strcmp_trueData:
    jr $ra
 
 strcmp_falseData:
+   li $v0 0
+   jr $ra
+   
+###########################################
+######### strcmpDataObtener ##################
+##########################################
+strcmpDataObtener:		# Compara 2 cadenas de caracteres
+   li $t2 ' '		
+   li $t3 10
+   li $v1 0
+
+strcmp_loopDataO:
+   lb $t0 0($a0)
+   lb $t1 0($a1)
+   beq $t0 $t2 strcmp_trueDataO	# Un par de caracteres que no son letras
+   beq $t0 $t3 strcmp_trueDataO
+   beq $t0 $0  strcmp_trueDataO	# Fin de cadena
+   bne $t0 $t1 strcmp_falseDataO# Es diferente
+   addi $a0 $a0 1
+   addi $a1 $a1 1
+   addi $v1 $v1 1
+   j strcmp_loopDataO
+   
+strcmp_trueDataO:
+   move $s0 $a0
+   move $a2 $a1
+   li $v0 1
+   jr $ra
+
+strcmp_falseDataO:
    li $v0 0
    jr $ra
 
