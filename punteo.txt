@@ -40,7 +40,7 @@ li                  YA
 la                  YA
 
 Saltos (6 puntos cada uno)
-j                   
+j                  YA 
 jr
 jal
 beq
