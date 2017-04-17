@@ -78,7 +78,8 @@ msgBCodif: 	.asciiz "Codificando el siguinete programa:\n\n"
 #pseudo aritmeticas-testcases
 #programa:	.asciiz ".text\nmain:\nli $a0 15\nneg $a0 $a0\nori $v0 $0 1\nsyscall\nabs $a0 $a0\nori $v0 $0 1\nsyscall\nori $s7 $0 3\nmove $a0 $s7\nori $v0 $0 1\nsyscall\nori $s0 $0 3\nori $s1 $0 4\nori $s3 $0 6\nmul $s7 $s0 $s1\ndiv $a0 $s7 $s3\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #.DATA
-programa:	.asciiz ".data\nhi:\n.asciiz \"Hola Mundo!!!\n\"\nbye:\n.asciiz \"Adios mundo cruel... :'( *snif*\"\n.text\nmain:\nla $a0 hi\nli $v0 4\nsyscall\nla $a0 bye\nli $v0 4\nsyscall\nli $v0 10\nsyscall"
+#programa:	.asciiz ".data\nhi:\n.asciiz \"Hola Mundo!!!\"\nbye:\n.asciiz \"Adios mundo cruel... :'( *snif*\"\n.text\nmain:\nla $a0 hi\nli $v0 4\nsyscall\nla $a0 bye\nli $v0 4\nsyscall\nli $v0 10\nsyscall"
+programa:	.asciiz ".data\nhi:\n.asciiz \"Hola Mundo!!!\"\n.text\nmain:\nla $a0 hi\nli $v0 4\nsyscall\nli $v0 10\nsyscall"
 		.align 2
 
 ##### FIN DEL PROGRAMA A CODIFICAR #####
@@ -325,11 +326,13 @@ exitData:
 #####################################
 ###### Obtener del area de data ###########
 asm_get_data:
-   addi $sp $sp -8
+   addi $sp $sp -12
    sw	$ra 0($sp)
    sw	$s3 4($sp)
+   sw 	$a1 8($sp)
 
    li 	$s3 0			# contador de cuanto me muevo en data
+asm_datatry:
    move $a0 $s0			# muevo el codigo a $a0
    la	$a1 0($a2)		# cargo la direccion de la posicion inicial de data
    jal	strcmpDataObtener	# miro si esta el label
@@ -337,7 +340,7 @@ asm_get_data:
    beq 	$v0 1 validate
    addi $a2 $a2 1		# avanzo al siguiente caracter
    addi $s3 $s3 1		# incremento contador de moviemiento en data
-   j asm_get_data
+   j asm_datatry
 validate:
    li 	$t0 ':'
    lb	$t1 0($a2)		# cargo lo que espero sean los ":"
@@ -349,8 +352,10 @@ returnAddress:
    la 	$v0 0($a2)
    sub  $a2 $a2 $s3		# regreso a la posicion inicial de data
    
+   lw	$a1 8($sp)
    lw	$s3 4($sp)
    lw	$ra 0($sp)
+   addi $sp $sp 12
    jr   $ra
 
 #####################################
@@ -1144,7 +1149,7 @@ asm_subu:
 ###########################################
 ######### asm_lui ##########################
 asm_lui:
-   li 	$s7 0xF		# cargo el codigo de la funcion 0xf
+   li 	$s7 0xf		# cargo el codigo de la funcion 0xf
    
    addi	$s0 $s0 1	# elimino el espacio
    sll 	$s7 $s7 10	# me corro 5 para dejar a rt en su posicion correcta (casi)
@@ -1873,11 +1878,40 @@ asm_la:
    add 	$s6 $0 $v0	# almaceno rdest -> rd
    addi	$s0 $s0 1	# elimino el espacio   
    
-   jal asm_get_data
+   jal asm_get_data	# voy a traer la direccion del label
+   srl $t0 $v0 16 	# guardo la parte alta en $t0
+   sll $t1 $v0 16	
+   srl $t1 $t1 16	# guardo la parte baja en $t1
    
+   #CODIFICACION LUI
+   li 	$s7 0xf		# cargo el codigo de la funcion 0xf
+   
+   sll 	$s7 $s7 10	# me corro 5 para dejar a rt en su posicion correcta (casi)
+   addi	$s7 $s7 1	# agrego rt a la instruccion
+   
+   sll	$s7 $s7 16	# dejo todo en su lugar y preparo para el inmediato
+   add  $s7 $s7 $t0 	# concateno el imm con el resto que ya tenia (parte alta)
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   
+   #CODIFICACION ORI
+   li 	$s7 0x0d		# codigo de ori 0x0d
+
+   sll 	$s7 $s7 10	# shift porque son 5b de rt + 5b de rs
+   add 	$s7 $s7 $s6	# almaceno el numero del registro en rs
+
+   li 	$t2 1
+   sll 	$t2 $t2 5	# pongo rs en la posicion que debe ir (van cruzados)
+   or  	$s7 $s7 $t2	# almaceno el numero del registro en rt
+   
+   sll 	$s7 $s7 16	# le hago shift de 16 para hacer espacio al imm
+   add  $s7 $s7 $t1 	# concateno el imm con el resto que ya tenia (parte baja)
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4	
    
    lw 	$ra 0($sp)
    addi $sp $sp 4
+   j asm_text_loop
 
 ###########################################
 ######### asm_j ############################
