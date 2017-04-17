@@ -43,7 +43,7 @@ Saltos (6 puntos cada uno)
 j                   YA 
 jr                  YA - no probada, no se como regresar a la tabla de simbolos
 jal                 YA
-beq
+beq                 
 bne
 bgtz
 bgt

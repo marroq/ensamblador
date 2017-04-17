@@ -52,7 +52,7 @@ msgBCodif: 	.asciiz "Codificando el siguinete programa:\n\n"
 #compara_testcase
 #programa:	.asciiz ".text\nmain:\nlui $s0 65535\nori $s0 $s0 65535\nslt $a0 $s0 $0\nori $v0 $0 1\nsyscall\nslti $a0 $s0 0\nori $v0 $0 1\nsyscall\nsltu $a0 $s0 $0\nori $v0 $0 1\nsyscall\nsltiu $a0 $s0 0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #registros_testcase
-#programa:	.asciiz ".text\nmain:\nori $s0 $0 0\nadd $a0 $s0 $0\nori $v0 $0 1\nsyscall\nori $s1 $0 1\nadd $a0 $s1 $0\nori $v0 $0 1\nsyscall\nori $s2 $0 2\nadd $a0 $s2 $0\nori $v0 $0 1\nsyscall\nori $s3 $0 3\nadd $a0 $s3 $0\nori $v0 $0 1\nsyscall\nori $s4 $0 4\nadd $a0 $s4 $0\nori $v0 $0 1\nsyscall\nori $s5 $0 5\nadd $a0 $s5 $0\nori $v0 $0 1\nsyscall\nori $s6 $0 6\nadd $a0 $s6 $0\nori $v0 $0 1\nsyscall\nori $s7 $0 7\nadd $a0 $s7 $0\nori $v0 $0 1\nsyscall\nori $t0 $0 0\nadd $a0 $t0 $0\nori $v0 $0 1\nsyscall\nori $t1 $0 1\nadd $a0 $t1 $0\nori $v0 $0 1\nsyscall\nori $t2 $0 2\nadd $a0 $t2 $0\nori $v0 $0 1\nsyscall\nori $t3 $0 3\nadd $a0 $t3 $0\nori $v0 $0 1\nsyscall\nori $t4 $0 4\nadd $a0 $t4 $0\nori $v0 $0 1\nsyscall\nori $t5 $0 5\nadd $a0 $t5 $0\nori $v0 $0 1\nsyscall\nori $t6 $0 6\nadd $a0 $t6 $0\nori $v0 $0 1\nsyscall\nori $t7 $0 7\nadd $a0 $t7 $0\nori $v0 $0 1\nsyscall\nori $t8 $0 8\nadd $a0 $t8 $0\nori $v0 $0 1\nsyscall\nori $t9 $0 9\nadd $a0 $t9 $0\nori $v0 $0 1\nsyscall\nori $v0 $0 0\nadd $a0 $v0 $0\nori $v0 $0 1\nsyscall\nori $v1 $0 1\nadd $a0 $v1 $0\nori $v0 $0 1\nsyscall\nori $a0 $0 0\nadd $a0 $a0 $0\nori $v0 $0 1\nsyscall\nori $a1 $0 1\nadd $a0 $a1 $0\nori $v0 $0 1\nsyscall\nori $a2 $0 2\nadd $a0 $a2 $0\nori $v0 $0 1\nsyscall\nori $a3 $0 3\nadd $a0 $a3 $0\nori $v0 $0 1\nsyscall\naddi $a0 $sp 4\nori $ra $0 0\nadd $a0 $ra $0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#programa:	.asciiz ".text\nmain:\nori $s0 $0 0\nadd $a0 $s0 $0\nori $v0 $0 1\nsyscall\nori $s1 $0 1\nadd $a0 $s1 $0\nori $v0 $0 1\nsyscall\nori $s2 $0 2\nadd $a0 $s2 $0\nori $v0 $0 1\nsyscall\nori $s3 $0 3\nadd $a0 $s3 $0\nori $v0 $0 1\nsyscall\nori $s4 $0 4\nadd $a0 $s4 $0\nori $v0 $0 1\nsyscall\nori $s5 $0 5\nadd $a0 $s5 $0\nori $v0 $0 1\nsyscall\nori $s6 $0 6\nadd $a0 $s6 $0\nori $v0 $0 1\nsyscall\nori $s7 $0 7\nadd $a0 $s7 $0\nori $v0 $0 1\nsyscall\nori $t0 $0 0\nadd $a0 $t0 $0\nori $v0 $0 1\nsyscall\nori $t1 $0 1\nadd $a0 $t1 $0\nori $v0 $0 1\nsyscall\nori $t2 $0 2\nadd $a0 $t2 $0\nori $v0 $0 1\nsyscall\nori $t3 $0 3\nadd $a0 $t3 $0\nori $v0 $0 1\nsyscall\nori $t4 $0 4\nadd $a0 $t4 $0\nori $v0 $0 1\nsyscall\nori $t5 $0 5\nadd $a0 $t5 $0\nori $v0 $0 1\nsyscall\nori $t6 $0 6\nadd $a0 $t6 $0\nori $v0 $0 1\nsyscall\nori $t7 $0 7\nadd $a0 $t7 $0\nori $v0 $0 1\nsyscall\nori $t8 $0 8\nadd $a0 $t8 $0\nori $v0 $0 1\nsyscall\nori $t9 $0 9\nadd $a0 $t9 $0\nori $v0 $0 1\nsyscall\nori $v0 $0 0\nadd $a0 $v0 $0\nori $v0 $0 1\nsyscall\nori $v1 $0 1\nadd $a0 $v1 $0\nori $v0 $0 1\nsyscall\nori $a0 $0 0\nadd $a0 $a0 $0\nori $v0 $0 1\nsyscall\nori $a1 $0 1\nadd $a0 $a1 $0\nori $v0 $0 1\nsyscall\nori $a2 $0 2\nadd $a0 $a2 $0\nori $v0 $0 1\nsyscall\nori $a3 $0 3\nadd $a0 $a3 $0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #MOVE
 #programa:	.asciiz ".text\nmain:\nori $t0 $0 25\nmove $a0 $t0\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #NEG
@@ -71,8 +71,8 @@ msgBCodif: 	.asciiz "Codificando el siguinete programa:\n\n"
 #programa:	.asciiz ".text\nmain:\nori $t4 $0 33\nori $t3 $0 43\nsne $a0 $t4 $t3\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #LI
 #programa:	.asciiz ".text\nmain:\nli $a0 9876\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
-#LW
-#programa:	.asciiz ".text\nmain:\nlui $s0 65535\nori $s0 $s0 65535\nsw $s0 0($sp)\nlw $a0 0($sp)\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#LW-SW
+programa:	.asciiz ".text\nmain:\nlui $s0 65535\nori $s0 $s0 65535\nsw $s0 0($sp)\nlw $a0 0($sp)\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #J
 #programa:	.asciiz ".text\nmain:\nori $t0 $0 18\nori $t1 $0 6\nlala:\ndiv $a0 $t0 $t1\nli $v0 1\nsyscall\nj lala\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #J2
@@ -85,7 +85,7 @@ msgBCodif: 	.asciiz "Codificando el siguinete programa:\n\n"
 #JR
 #programa:	.asciiz ".text\nmain:\njr $ra"
 #JAL
-programa:	.asciiz ".text\nmain:\nori $t0 $0 20\nori $t1 $0 5\ndiv $a0 $t0 $t1\nli $v0 1\nsyscall\njal main"
+#programa:	.asciiz ".text\nmain:\nori $t0 $0 20\nori $t1 $0 5\ndiv $a0 $t0 $t1\nli $v0 1\nsyscall\njal main"
 		.align 2
 		
 ##### FIN DEL PROGRAMA A CODIFICAR #####
