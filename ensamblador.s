@@ -74,12 +74,12 @@ msgBCodif: 	.asciiz "Codificando el siguinete programa:\n\n"
 #LW
 #programa:	.asciiz ".text\nmain:\nlui $s0 65535\nori $s0 $s0 65535\nsw $s0 0($sp)\nlw $a0 0($sp)\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #J
-#programa:	.asciiz ".text\nmain:\nori $t0 $0 18\nori $t1 $0 6\nlala:\ndiv $a0 $t0 $t1\nj lala\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+programa:	.asciiz ".text\nmain:\nori $t0 $0 18\nori $t1 $0 6\nlala:\ndiv $a0 $t0 $t1\nj lala\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #pseudo aritmeticas-testcases
 #programa:	.asciiz ".text\nmain:\nli $a0 15\nneg $a0 $a0\nori $v0 $0 1\nsyscall\nabs $a0 $a0\nori $v0 $0 1\nsyscall\nori $s7 $0 3\nmove $a0 $s7\nori $v0 $0 1\nsyscall\nori $s0 $0 3\nori $s1 $0 4\nori $s3 $0 6\nmul $s7 $s0 $s1\ndiv $a0 $s7 $s3\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #.DATA
 #programa:	.asciiz ".data\nhi:\n.asciiz \"Hola Mundo!!!\"\nbye:\n.asciiz \"Adios mundo cruel... :'( *snif*\"\n.text\nmain:\nla $a0 hi\nli $v0 4\nsyscall\nla $a0 bye\nli $v0 4\nsyscall\nli $v0 10\nsyscall"
-programa:	.asciiz ".data\nhi:\n.asciiz \"Hola Mundo!!!\"\n.text\nmain:\nla $a0 hi\nli $v0 4\nsyscall\nli $v0 10\nsyscall"
+#programa:	.asciiz ".data\nhi:\n.asciiz \"Hola Mundo!!!\"\nlala:\n.asciiz \"\nadios mundo\"\nadl:\n.asciiz \"de nuevo mundo\"\n.text\nmain:\nla $a0 hi\nli $v0 4\nsyscall\nla $a0 lala\nli $v0 4\nsyscall\nla $a0 adl\nli $v0 4\nsyscall\nli $v0 10\nsyscall"
 		.align 2
 
 ##### FIN DEL PROGRAMA A CODIFICAR #####
@@ -441,7 +441,7 @@ exitObtener:
    mult $s5 $s6			# ubicacion del siguiente label
    mflo $t1
    subi $t1 $t1 4		# le resto 4 para llegar a la direccion
-   lw 	$v0 tabla($t1) 		# cargo la dirección del label solicitado
+   la 	$v0 tabla($t1) 		# cargo la dirección del label solicitado
    lw	$s5 8($sp)
    lw 	$s6 4($sp)
    lw	$ra 0($sp)		
