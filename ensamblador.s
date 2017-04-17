@@ -74,14 +74,20 @@ msgBCodif: 	.asciiz "Codificando el siguinete programa:\n\n"
 #LW
 #programa:	.asciiz ".text\nmain:\nlui $s0 65535\nori $s0 $s0 65535\nsw $s0 0($sp)\nlw $a0 0($sp)\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #J
-programa:	.asciiz ".text\nmain:\nori $t0 $0 18\nori $t1 $0 6\nlala:\ndiv $a0 $t0 $t1\nli $v0 1\nsyscall\nj lala\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#programa:	.asciiz ".text\nmain:\nori $t0 $0 18\nori $t1 $0 6\nlala:\ndiv $a0 $t0 $t1\nli $v0 1\nsyscall\nj lala\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
+#J2
+#programa:	.asciiz ".text\nmain:\nori $t0 $0 18\nori $t1 $0 6\ndiv $a0 $t0 $t1\nj lala\nori $v0 $0 1\nsyscall\nlala:\nli $v0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #pseudo aritmeticas-testcases
 #programa:	.asciiz ".text\nmain:\nli $a0 15\nneg $a0 $a0\nori $v0 $0 1\nsyscall\nabs $a0 $a0\nori $v0 $0 1\nsyscall\nori $s7 $0 3\nmove $a0 $s7\nori $v0 $0 1\nsyscall\nori $s0 $0 3\nori $s1 $0 4\nori $s3 $0 6\nmul $s7 $s0 $s1\ndiv $a0 $s7 $s3\nori $v0 $0 1\nsyscall\nori $v0 $0 10\nsyscall"
 #.DATA
 #programa:	.asciiz ".data\nhi:\n.asciiz \"Hola Mundo!!!\"\nbye:\n.asciiz \"Adios mundo cruel... :'( *snif*\"\n.text\nmain:\nla $a0 hi\nli $v0 4\nsyscall\nla $a0 bye\nli $v0 4\nsyscall\nli $v0 10\nsyscall"
 #programa:	.asciiz ".data\nhi:\n.asciiz \"Hola Mundo!!!\"\nlala:\n.asciiz \"\nadios mundo\"\nadl:\n.asciiz \"de nuevo mundo\"\n.text\nmain:\nla $a0 hi\nli $v0 4\nsyscall\nla $a0 lala\nli $v0 4\nsyscall\nla $a0 adl\nli $v0 4\nsyscall\nli $v0 10\nsyscall"
+#JR
+#programa:	.asciiz ".text\nmain:\njr $ra"
+#JAL
+programa:	.asciiz ".text\nmain:\nori $t0 $0 20\nori $t1 $0 5\ndiv $a0 $t0 $t1\nli $v0 1\nsyscall\njal main"
 		.align 2
-
+		
 ##### FIN DEL PROGRAMA A CODIFICAR #####
 
 errMsg: 		.asciiz "Error!!!\n"
@@ -219,6 +225,10 @@ str_j:		.asciiz "j"
 		.align 2
 str_asciiz:	.asciiz ".asciiz"
 		.align 2
+str_jr:		.asciiz "jr"
+		.align 2
+str_jal:		.asciiz "jal"
+		.align 2	
 
 .text
 ###################################################
@@ -669,6 +679,16 @@ asm_get_instruction:		# Basicamente, un gran switch que indica que instruccion e
    la 	$a1 str_j		# verifico si es la instruccion j
    jal 	strcmp
    bne	$v0 $0 asm_j  
+   
+   move $a0 $s0
+   la 	$a1 str_jr		# verifico si es la instruccion jr
+   jal 	strcmp
+   bne	$v0 $0 asm_jr
+   
+   move $a0 $s0
+   la 	$a1 str_jal		# verifico si es la instruccion jal
+   jal 	strcmp
+   bne	$v0 $0 asm_jal
    
    move $a0 $s0			# verifico si es un label
    jal asm_label_check
@@ -1940,6 +1960,46 @@ suprLabel:
    addi $sp $sp 4
    j asm_text_loop
    
+###########################################
+######### asm_jr ############################
+asm_jr:
+   addi $s0 $s0 1	# elimino el espacio
+   jal 	asm_regs     	# me devuelve el numero del registro
+   add 	$s7 $s7 $v0	# almaceno el numero del registro en rs
+   
+   sll 	$s7 $s7 21	# dejo a rs en su posicion correcta
+   addi	$s7 $s7 8	# codigo de jr
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   j asm_text_loop
+
+###########################################
+######### asm_jal ############################
+asm_jal:
+   addi $sp $sp -4 
+   sw 	$ra 0($sp)
+   
+   li 	$s7 0x03	# codigo de jal
+   addi $s0 $s0 1	# elimino el espacio
+   sll	$s7 $s7 26	# dejo el codigo en el lugar que debe i
+   move	$a0 $s0		# envio la cadena que quiero buscar
+   jal 	obtenerTabla
+   sll	$v0 $v0 4	# quito 4 bits mas significativos
+   srl 	$v0 $v0 6	# quito los 2 bits menos significativos
+   add 	$s7 $s7 $v0	# concateno la direccion de la etiqueta
+   sw 	$s7 0($s1)	# almaceno la instruccion codificada
+   addi $s1 $s1 4
+   
+   li	$t1 10		# salto de linea
+suprLabelJal:
+   lb 	$t0 0($s0)	# cargo el caracter del label
+   addi $s0 $s0 1	# avanzo al siguiente caracter
+   bne 	$t0 $t1 suprLabelJal
+   
+   lw	$ra 0($sp)
+   addi $sp $sp 4
+   j asm_text_loop
+         
 ###########################################
 ############# asm_regs ####################
 asm_regs:		# pasa de $xN -> N ej. $s0 -> 16

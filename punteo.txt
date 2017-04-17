@@ -40,9 +40,9 @@ li                  YA
 la                  YA
 
 Saltos (6 puntos cada uno)
-j                  YA 
-jr
-jal
+j                   YA 
+jr                  YA - no probada, no se como regresar a la tabla de simbolos
+jal                 YA
 beq
 bne
 bgtz
